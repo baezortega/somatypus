@@ -1,0 +1,120 @@
+INSTALLING SOMATYPUS 1.0
+07/02/2016
+
+
+Somatypus has been designed as a set of Bash and Python scripts that do not require a real 
+installation, but simply adding the software directory to the PATH environment variable, 
+thus making set-up straightforward. However, it has some minimal software dependencies:
+
+• Python 2.6 or later (it has not been tested on Python 3.X).
+• Platypus (http://www.well.ox.ac.uk/platypus), which in turn requires htslib 
+  (http://www.htslib.org) — we recommend installing both inside a same directory.
+• VCFtools (https://vcftools.github.io), for using the vcf-sort command.
+• The tabix package (http://sourceforge.net/projects/samtools/files/tabix), for using the 
+  tabix and bgzip commands. It should come together with htslib.
+
+
+
+1. INSTALLER SCRIPT
+
+Installing the pipeline is as easy as downloading the latest version’s ZIP file (available 
+from the GitHub repository), uncompressing it into the desired location, and running the 
+install_somatypus.sh script. 
+
+(Replace the example path with your own.)
+
+    /PATH/TO/somatypus-1.0/install_somatypus.sh
+	
+
+This script will automatically download and install any necessary dependencies, and will 
+add the somatypus-1.0/src directory (which contains the pipeline scripts) to the PATH 
+environment variable. It will stop if it detects any problem at any step of the 
+installation. If you are unable to find the cause of the problem, then you should open 
+this script and run the commands in it from the terminal, one by one. 
+
+Once the installation process is finished, you will need to source the .profile file in 
+your home directory, so that the changes made by the installation script are applied. 
+After that, you should be able to run somatypus directly from the command line:
+
+    source ~/.profile
+    somatypus
+
+
+(Just after installing Somatypus, you will be able to run it only from the terminal in 
+which you sourced the .profile file. If you need to run Somatypus in other terminal, you 
+must either source the .profile file again, or log out of your session and log in again.)
+
+
+
+2. USERS WITHOUT ADMINISTRATOR PRIVILEGES
+
+During the installation you will be asked for your password, because administrator 
+privileges are needed to complete the installation of some of the dependencies. 
+
+If you do not have administration privileges in your computer (i.e. you cannot do ‘sudo’), 
+you will not be able to run the 'make install' commands. Make sure that you run the other
+steps of the script in a terminal, but also follow these complementary steps:
+	
+
+a) After running 'make' in the installation of htslib, add to your PATH (in the 
+   ~/.profile file) the FULL paths of:
+
+somatypus-1.0/Platypus_0.8.1
+somatypus-1.0/Platypus_0.8.1/htslib
+
+To do this, you can either edit the ~/.profile file with a text editor (e.g. nano), and 
+modify the "export PATH=..." statement as necessary (or create it if it does not exists),
+or just go to the 'somatypus-1.0' directory:
+
+    cd /PATH/TO/somatypus-1.0
+    
+And run this:
+
+    echo "export PATH=$PWD/Platypus_0.8.1:$PWD/Platypus_0.8.1/htslib:\$PATH" >> ~/.profile
+
+Regardless of which option you choose, then you need to source the file by running:
+
+    source ~/.profile
+
+
+b) After the previous step, move the contents of 
+   somatypus-1.0/Platypus_0.8.1/htslib/htslib to somatypus-1.0/Platypus_0.8.1/htslib:
+   
+    cd /PATH/TO/somatypus-1.0
+    mv Platypus_0.8.1/htslib/htslib/* Platypus_0.8.1/htslib/
+
+
+c) Before running 'buildPlatypus.sh', go to the 'somatypus-1.0' folder (if your are not
+   there already):
+
+    cd /PATH/TO/somatypus-1.0
+ 
+And run the following commands:
+
+    export LDFLAGS=-L$PWD/Platypus_0.8.1/htslib
+    cp Platypus_0.8.1/htslib/libhts.so.1 Platypus_0.8.1/
+
+
+d) After running 'make' in the installation of VCFtools, add to your PATH (in the 
+   ~/.profile file) the FULL paths of:
+   
+somatypus-1.0/vcftools-0.1.14/src/cpp
+somatypus-1.0/vcftools-0.1.14/src/perl
+
+To do this, you can either edit the ~/.profile file with a text editor (e.g. nano), and 
+modify the "export PATH=..." statement as necessary, or just go to the 'somatypus-1.0' 
+directory (if you are not there already):
+
+    cd /PATH/TO/somatypus-1.0
+    
+And run this:
+
+    echo "export PATH=$PWD/vcftools-0.1.14/src/cpp:$PWD/vcftools-0.1.14/src/perl:\$PATH" >> ~/.profile
+
+Regardless of which option you choose, then you need to source the file by running:
+
+    source ~/.profile
+
+
+* It is possible that these steps will not be enough to complete the installation.
+
