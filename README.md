@@ -34,7 +34,7 @@ Somatypus has been tested on Ubuntu (14.04.3) systems, and it should behave well
 * Allow a customised (different parameters) or partial (only certain steps) execution — unless the source code is altered.
 
 
-**Read the full documentation in [docs/Somatypus Documentation.pdf] (https://github.com/adrianbaezortega/somatypus/raw/master/docs/Somatypus%20Documentation.pdf).**
+##### Read the full documentation in [docs/Somatypus Documentation.pdf] (https://github.com/adrianbaezortega/somatypus/raw/master/docs/Somatypus%20Documentation.pdf).
 
 
 ---
