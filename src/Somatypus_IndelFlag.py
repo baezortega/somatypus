@@ -28,14 +28,14 @@ from sets import Set
 
 # If not 2 arguments: print help
 if len(sys.argv) != 3:
-    print '\nplatypusIndelFlag.py: Identifies SNPs close to indels in multiple Platypus output VCF files.'
-    print '                      *The VCFs need to be split first with the splitMAandMNPs.py script.*'
-    print '                      For each VCF, it extracts the coordinates of the bases up to 5bp'
-    print '                      upstream and downstream any indel; then, it detects SNPs inside'
-    print '                      these regions in the same sample and outputs them into a text file.\n'
-    print '               Input: A text file with paths to VCF files, one per line.'
-    print '                      Path to output file.'
-    print '               Usage: platypusIndelFlag.py /path/to/fileList.txt /path/to/outFile.txt\n'
+    print '\nSomatypus_IndelFlag.py: Identifies SNPs close to indels in multiple Platypus output VCF files.'
+    print '                        *The VCFs need to be split first with the splitMAandMNPs.py script.*'
+    print '                        For each VCF, it extracts the coordinates of the bases up to 5bp'
+    print '                        upstream and downstream any indel; then, it detects SNPs inside'
+    print '                        these regions in the same sample and outputs them into a text file.'
+    print '                 Input: A text file with paths to VCF files, one per line.'
+    print '                        Path to output file.'
+    print '                 Usage: Somatypus_IndelFlag.py /path/to/fileList.txt /path/to/outFile.txt\n'
     sys.exit(0)
 
 
