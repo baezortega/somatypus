@@ -25,8 +25,8 @@ import os
 import re
 
 
-# If not 2 arguments: print help
-if len(sys.argv) != 3:
+# If not 1 argument: print help
+if len(sys.argv) != 2:
     print '\nExtractVcfData.py: Extracts the metadata (CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO), the'
     print '                   total number of reads (NR) and the number of reads supporting the variant (NV),'
     print '                   from every variant in a VCF file, into three respective output text files.'
