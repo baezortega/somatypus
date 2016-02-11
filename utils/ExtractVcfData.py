@@ -6,7 +6,6 @@
 
 # ExtractVcfData.py
 # Identifies SNPs close to indels in multiple Platypus output VCF files
-# Called by indel_flag()
 
 # INPUT
 # vcfFile: path to input VCF file
