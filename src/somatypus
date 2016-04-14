@@ -3,7 +3,7 @@
 # SOMATYPUS: A PLATYPUS-BASED VARIANT CALLING PIPELINE FOR CANCER DATA
 # Adrian Baez-Ortega, Transmissible Cancer Group, University of Cambridge
 # 22/01/2016
-# Latest update: 07/02/2016
+# Latest update: 12/04/2016
 
 # somatypus
 # Core pipeline script
@@ -11,12 +11,14 @@
 # INPUT
 # -i: path to folder containing the input BAM files (accompanied by BAI indices)
 # -g: path to genome FASTA (must have FAI index)
-# -r: path to file of regions in chr:start-end format (optional)
 # -o: path to global output folder
-# -c: number of CPUs (processes) for Platypus (*SHOULD NOT EXCEED 8 DUE TO BUG*)
+# -r: path to file of regions in chr:start-end format (optional)
+# -c: number of CPUs (processes) for Platypus (*SHOULD NOT EXCEED 8 DUE TO BUG*) (optional)
+# -e: extra options for Platypus (within quotes, separated by spaces) (optional)
 
 
-VERSION=1.0
+
+VERSION=1.1
 
 
 ####################################### FUNCTIONS #######################################
@@ -29,26 +31,24 @@ print_help() {
     echo
     echo "| SOMATYPUS"
     echo "| A Platypus-based variant calling pipeline for cancer data"
-    echo "|"
-    echo "| Adrian Baez-Ortega, Maximilian R. Stammnitz and Elizabeth P. Murchison"
-    echo "| Transmissible Cancer Group, University of Cambridge"
-    echo "| Developed by A.B-O. (2016)"
-    echo "|"
-    echo "| Somatypus is a computational pipeline that makes use of the powerful variant caller Platypus for"
-    echo "| calling germ-line and somatic SNPs and indels in sequencing data from a set of unpaired samples."
-    echo "| It has been designed to offer great sensitivity and specificity, even for low-frequency somatic"
-    echo "| mutations found in cancer genomes. It is particularly useful in cases where there is no matched"
-    echo "| normal sample for each tumour sample, such as transmissible cancers or metastases."
+    echo "| Version $VERSION"
     echo "|"    
-    echo "| Input:"
+    echo "| Required input:"
     echo "|    -i  Absolute path to folder containing the input BAM files (accompanied by BAI indices)."
     echo "|    -o  Absolute path to the output folder (it will be created if needed)."
     echo "|    -g  Absolute path to reference genome FASTA file (accompanied by FAI index)."
-    echo "|    -r  Absolute path to file of regions to use, one per line in CHR:START-END format. [OPTIONAL]"
-    echo "|    -c  Number of CPUs (processes) for Platypus  *(should not exceed 8 due to a bug)*. [OPTIONAL]" 
+    echo "|"
+    echo "| Optional input:"
+    echo "|    -r  Absolute path to file of regions to use, one per line in CHR:START-END format."
+    echo "|    -c  Number of CPUs (processes) for Platypus *(should not exceed 8 due to a bug)*."
+    echo "|    -p  Additional options for Platypus, within quotes and separated by spaces."
+    echo "|"
+    echo "| Options:"
+    echo "|    -h  Print this usage information and exit."
+    echo "|    -v  Print version and exit."
     echo "|"
     echo "| Usage:"
-    echo "|    somatypus -i /path/to/bams_dir -o /path/to/out_dir -g /path/to/genome.fna -r /path/to/regions.txt -c <1-8>"
+    echo "|    somatypus -i /path/to/bams_dir -o /path/to/out_dir -g /path/to/genome.fna -r /path/to/regions.txt -c <1-8> -p \"--option=VAL --option=VAL\""
     echo
     echo
 }
@@ -68,7 +68,7 @@ check_file() {
 
 
 # PIPELINE STEPS
-# 1) individual_calling()
+# 1-2) individual_calling()
 # Calls variants using Platypus from each sample in a sample set, individually
 # INPUT: $1 - Settings to use for calling: default (0) or alternative (1)
 individual_calling() {
@@ -79,8 +79,10 @@ individual_calling() {
         REGIONSARG="--regions=$REGIONS"
     fi
 
-    # Create directories for output files
-    mkdir -p $OUTDIR/1_individual_calls
+    # Create directories for output files and logs
+    mkdir -p $OUTDIR/1-2_individual_calls
+    mkdir -p $OUTDIR/logs/1_individual_default
+    mkdir -p $OUTDIR/logs/2_individual_alternative
 
     # Run Platypus with the default/alternative settings, for each BAM file
     # Default settings:
@@ -89,14 +91,15 @@ individual_calling() {
             NAME=`basename $FILE`
             echo -e "\nCalling on $NAME\n"
             Platypus.py callVariants \
-            --logFileName=$OUTDIR/logs/1_individual_default.log \
+            --logFileName=$OUTDIR/logs/1_individual_default/"${NAME%.*}"_default.log \
             --refFile=$REFERENCE \
             --bamFiles=$FILE \
             $REGIONSARG \
             --minPosterior=0 \
             --minReads=3 \
             --nCPU=$CPUS \
-            -o $OUTDIR/1_individual_calls/platypusVariants_"${NAME%.*}"_default.vcf
+            $EXTRA \
+            -o $OUTDIR/1-2_individual_calls/platypusVariants_"${NAME%.*}"_default.vcf
         done
 
     # Alternative (minFlank=0) settings:
@@ -105,7 +108,7 @@ individual_calling() {
             NAME=`basename $FILE`
             echo -e "\nCalling on $NAME\n"
             Platypus.py callVariants \
-            --logFileName=$OUTDIR/logs/2_individual_alternative.log \
+            --logFileName=$OUTDIR/logs/2_individual_alternative/"${NAME%.*}"_alternative.log \
             --refFile=$REFERENCE \
             --bamFiles=$FILE \
             $REGIONSARG \
@@ -114,42 +117,26 @@ individual_calling() {
             --minFlank=0 \
             --trimReadFlank=10 \
             --nCPU=$CPUS \
-            -o $OUTDIR/1_individual_calls/platypusVariants_"${NAME%.*}"_alternative.vcf
+            $EXTRA \
+            -o $OUTDIR/1-2_individual_calls/platypusVariants_"${NAME%.*}"_alternative.vcf
         done
     fi
     
 }
 
 
-# 2) split_calls()
+# 3) split_calls()
 # Splits multi-allelic calls and MNPs in individual Platypus VCFs into bi-allelic SNPs
 split_calls() {
 
     # Create directory for output split files
-    mkdir -p $OUTDIR/2_individual_split
+    mkdir -p $OUTDIR/3_individual_split
 
     # For each individual VCF, split calls
-    for FILE in `ls $OUTDIR/1_individual_calls/platypusVariants_*`; do
+    for FILE in `ls $OUTDIR/1-2_individual_calls/platypusVariants_*`; do
         Somatypus_SplitMA-MNPs.py $FILE >> $OUTDIR/logs/3_split.log
-        mv "${FILE%.*}".split.vcf $OUTDIR/2_individual_split/
+        mv "${FILE%.*}".split.vcf $OUTDIR/3_individual_split/
     done
-
-}
-
-
-# 3) indel_flag()
-# Identifies SNPs close to indels in any sample, from a set of Platypus VCFs
-indel_flag() {
-
-    # Create directory for output indel-flagged SNPs list
-    mkdir -p $OUTDIR/4_merged
-
-    # Create a list of all split VCF files
-    rm -f $OUTDIR/2_individual_split/list.txt
-    ls -1 $OUTDIR/2_individual_split/*.split.vcf > $OUTDIR/2_individual_split/list.txt
-
-    # Create list of indel-flagged SNPs
-    Somatypus_IndelFlag.py $OUTDIR/2_individual_split/list.txt $OUTDIR/4_merged/indel_flagged_SNPs.txt > $OUTDIR/logs/4_indel_flag.log
 
 }
 
@@ -159,74 +146,91 @@ indel_flag() {
 filter_calls() {
 
     # Create directory for output filtered VCFs
-    mkdir -p $OUTDIR/3_individual_filtered
+    mkdir -p $OUTDIR/4_individual_filtered
 
     # For each split VCF, remove calls with flags badReads, MQ, strandBias, SC or QD
-    for FILE in `ls $OUTDIR/2_individual_split/platypusVariants_*`; do
+    for FILE in `ls $OUTDIR/3_individual_split/platypusVariants_*`; do
         NAME=`basename $FILE`
-        awk '!(($7 ~ /badReads/) || ($7 ~ /MQ/) || ($7 ~ /strandBias/) || ($7 ~ /SC/) || ($7 ~ /QD/))' $FILE > $OUTDIR/3_individual_filtered/"${NAME%.*}".filtered.vcf
+        awk '!(($7 ~ /badReads/) || ($7 ~ /MQ/) || ($7 ~ /strandBias/) || ($7 ~ /SC/) || ($7 ~ /QD/))' $FILE > $OUTDIR/4_individual_filtered/"${NAME%.*}".filtered.vcf
     done
 
 }
 
 
-# 5) merge_calls()
-# Merges filtered Platypus SNP calls obtained from individual calling
-merge_calls() {
+# 5) indel_flag()
+# Identifies SNPs close to indels in any sample, from a set of Platypus VCFs
+indel_flag() {
 
-    # Create a list of filtered individual VCFs
-    ls -1 $OUTDIR/3_individual_filtered/*.filtered.vcf > $OUTDIR/3_individual_filtered/list.txt
+    # Create directory for output indel-flagged SNPs list
+    mkdir -p $OUTDIR/5-7_merged
 
-    # Merge SNPs from all filtered VCFs
-    Somatypus_SnpMerge.py $OUTDIR/3_individual_filtered/list.txt $OUTDIR/4_merged/indel_flagged_SNPs.txt $OUTDIR/4_merged > $OUTDIR/logs/5_SNP_merge.log
+    # Create a list of all split VCF files
+    rm -f $OUTDIR/3_individual_split/list.txt
+    ls -1 $OUTDIR/3_individual_split/*.split.vcf > $OUTDIR/3_individual_split/list.txt
+
+    # Create list of indel-flagged SNPs
+    Somatypus_IndelFlag.py $OUTDIR/3_individual_split/list.txt $OUTDIR/5-7_merged/indel_flagged_SNPs.txt > $OUTDIR/logs/5_indel_flag.log
 
 }
 
 
-# 6) extract_indels()
+# 6) merge_calls()
+# Merges filtered Platypus SNP calls obtained from individual calling
+merge_calls() {
+
+    # Create a list of filtered individual VCFs
+    ls -1 $OUTDIR/4_individual_filtered/*.filtered.vcf > $OUTDIR/4_individual_filtered/list.txt
+
+    # Merge SNPs from all filtered VCFs
+    Somatypus_SnpMerge.py $OUTDIR/4_individual_filtered/list.txt $OUTDIR/5-7_merged/indel_flagged_SNPs.txt $OUTDIR/5-7_merged > $OUTDIR/logs/6_SNP_merge.log
+
+}
+
+
+# 7) extract_indels()
 # Extracts indels from Platypus VCF files obtained from individual calling
 extract_indels() {
 
     # Create list of original individual VCFs
     # (Indel merging uses unfiltered, unsplit calls)
-    ls -1 $OUTDIR/1_individual_calls/*.vcf > $OUTDIR/1_individual_calls/list.txt
+    ls -1 $OUTDIR/1-2_individual_calls/*.vcf > $OUTDIR/1-2_individual_calls/list.txt
 
     # Merge and filter indels; only bi-allelic, PASS-flagged indels are selected
-    Somatypus_IndelMerge.py $OUTDIR/1_individual_calls/list.txt $OUTDIR/4_merged > $OUTDIR/logs/6_indel_merge.log
+    Somatypus_IndelMerge.py $OUTDIR/1-2_individual_calls/list.txt $OUTDIR/5-7_merged > $OUTDIR/logs/7_indel_merge.log
 
     # Append indels to Allele 1 SNPs file
-    cat $OUTDIR/4_merged/MergedIndels.vcf >> $OUTDIR/4_merged/MergedSNPs_allele1.vcf
+    cat $OUTDIR/5-7_merged/MergedIndels.vcf >> $OUTDIR/5-7_merged/MergedSNPs_allele1.vcf
 
 }
 
 
-# 7) prepare_genotyping()
+# 8) prepare_genotyping()
 # Generates adequate VCF and region files for SNP and indel genotyping
 prepare_genotyping() {
 
     # Sort, compress and index VCF files for inputting them to Platypus
-    for FILE in `ls $OUTDIR/4_merged/MergedSNPs_allele?.vcf`; do
+    for FILE in `ls $OUTDIR/5-7_merged/MergedSNPs_allele?.vcf`; do
         vcf-sort $FILE > "${FILE%.*}".sorted.vcf 2> /dev/null
         bgzip "${FILE%.*}".sorted.vcf
         tabix -p vcf "${FILE%.*}".sorted.vcf.gz
     done
 
     # Create directory for new region files (and genotyping output)
-    mkdir -p $OUTDIR/5_genotyped
+    mkdir -p $OUTDIR/8-17_genotyped
 
     # If the user input a regions file:
     # Extract only regions (exons, in principle) containing variants
     if [ "$REGIONS" != "no" ]; then
-        Somatypus_ExtractExons.py $REGIONS $OUTDIR/4_merged/MergedSNPs_allele1.vcf $OUTDIR/4_merged/MergedSNPs_allele2.vcf $OUTDIR/4_merged/MergedSNPs_allele3.vcf $OUTDIR/5_genotyped 0 > $OUTDIR/logs/7_extract_exons.log
+        Somatypus_ExtractExons.py $REGIONS $OUTDIR/5-7_merged/MergedSNPs_allele1.vcf $OUTDIR/5-7_merged/MergedSNPs_allele2.vcf $OUTDIR/5-7_merged/MergedSNPs_allele3.vcf $OUTDIR/8-17_genotyped 0 > $OUTDIR/logs/8_extract_exons.log
     fi
 
     # Create list of BAM files for Platypus
-    ls -1 $BAMSDIR/*.bam > $OUTDIR/5_genotyped/bam_list.txt
+    ls -1 $BAMSDIR/*.bam > $OUTDIR/8-17_genotyped/bam_list.txt
 
 }
 
 
-# 8) genotyping()
+# 9-11) genotyping()
 # Runs Platypus to genotype SNPs and indels obtained after individual calling and filtering
 # INPUT: $1 - Number of the allele to be genotyped (1, 2 or 3)
 genotyping() {
@@ -236,47 +240,49 @@ genotyping() {
     # If the user input a regions file: include the --regions argument
     REGIONSARG=""
     if [ "$REGIONS" != "no" ]; then
-        REGIONSARG="--regions=$OUTDIR/5_genotyped/regions_allele${IND}.txt"
+        REGIONSARG="--regions=$OUTDIR/8-17_genotyped/regions_allele${IND}.txt"
     fi
 
     # Run Platypus to genotype the specified allele
     Platypus.py callVariants \
-    --logFileName=$OUTDIR/logs/$(( 7 + $IND ))_genotype_first_allele${IND}.log \
+    --logFileName=$OUTDIR/logs/$(( 8 + $IND )).1_genotype_first_allele${IND}.log \
     --refFile=$REFERENCE \
-    --bamFiles=$OUTDIR/5_genotyped/bam_list.txt \
+    --bamFiles=$OUTDIR/8-17_genotyped/bam_list.txt \
     $REGIONSARG \
     --minPosterior=0 \
     --nCPU=$CPUS \
     --minReads=3 \
-    --source=$OUTDIR/4_merged/MergedSNPs_allele${IND}.sorted.vcf.gz \
+    --source=$OUTDIR/5-7_merged/MergedSNPs_allele${IND}.sorted.vcf.gz \
     --getVariantsFromBAMs=0 \
-    -o $OUTDIR/5_genotyped/GenotypedSNPs_first_allele${IND}.vcf
+    $EXTRA \
+    -o $OUTDIR/8-17_genotyped/GenotypedSNPs_first_allele${IND}.vcf
 
     # (Some calls may not be genotyped due to the way Platypus builds haplotypes)
     # Extract missing calls by comparing merged and genotyped VCFs
-    tail -n +49 $OUTDIR/5_genotyped/GenotypedSNPs_first_allele${IND}.vcf | cut -f1,2,4,5 > $OUTDIR/geno_pos.txt
-    cut -f1,2,4,5 $OUTDIR/4_merged/MergedSNPs_allele${IND}.vcf > $OUTDIR/merged_pos.txt
+    tail -n +49 $OUTDIR/8-17_genotyped/GenotypedSNPs_first_allele${IND}.vcf | cut -f1,2,4,5 > $OUTDIR/geno_pos.txt
+    cut -f1,2,4,5 $OUTDIR/5-7_merged/MergedSNPs_allele${IND}.vcf > $OUTDIR/merged_pos.txt
     grep -vxFf $OUTDIR/geno_pos.txt $OUTDIR/merged_pos.txt > $OUTDIR/coords.txt
 
     # Create a new regions file containing only the bases of the missing variants
     # The size of the region is the length of the SNP/indel
-    awk '{if (length($3) >= length($4)) { print $1 ":" $2 "-" $2+length($3)-1 } else { print $1 ":" $2 "-" $2+length($4)-1 }}' $OUTDIR/coords.txt > $OUTDIR/5_genotyped/SNPregions_allele${IND}.txt
+    awk '{if (length($3) >= length($4)) { print $1 ":" $2 "-" $2+length($3)-1 } else { print $1 ":" $2 "-" $2+length($4)-1 }}' $OUTDIR/coords.txt > $OUTDIR/8-17_genotyped/SNPregions_allele${IND}.txt
     rm $OUTDIR/geno_pos.txt $OUTDIR/merged_pos.txt $OUTDIR/coords.txt
 
     # If there are missing calls: run Platypus to re-genotype them
-    if [ -s $OUTDIR/5_genotyped/SNPregions_allele${IND}.txt ]; then
+    if [ -s $OUTDIR/8-17_genotyped/SNPregions_allele${IND}.txt ]; then
         echo -e "\nGenotyping missing calls in allele $IND\n"
         Platypus.py callVariants \
-        --logFileName=$OUTDIR/logs/$(( 10 + $IND ))_genotype_snpRegions_allele${IND}.log \
+        --logFileName=$OUTDIR/logs/$(( 8 + $IND )).2_genotype_snpRegions_allele${IND}.log \
         --refFile=$REFERENCE \
-        --bamFiles=$OUTDIR/5_genotyped/bam_list.txt \
-        --regions=$OUTDIR/5_genotyped/SNPregions_allele${IND}.txt \
+        --bamFiles=$OUTDIR/8-17_genotyped/bam_list.txt \
+        --regions=$OUTDIR/8-17_genotyped/SNPregions_allele${IND}.txt \
         --minPosterior=0 \
         --nCPU=$CPUS \
         --minReads=3 \
-        --source=$OUTDIR/4_merged/MergedSNPs_allele${IND}.sorted.vcf.gz \
+        --source=$OUTDIR/5-7_merged/MergedSNPs_allele${IND}.sorted.vcf.gz \
         --getVariantsFromBAMs=0 \
-        -o $OUTDIR/5_genotyped/GenotypedSNPs_second_allele${IND}.vcf
+        $EXTRA \
+        -o $OUTDIR/8-17_genotyped/GenotypedSNPs_second_allele${IND}.vcf
     else
         echo -e "\nNo missing calls"
     fi
@@ -284,12 +290,12 @@ genotyping() {
 }
 
 
-# 9) prepare_genotyping_indelflagged()
+# 12) prepare_genotyping_indelflagged()
 # Generates adequate VCF and region files for genotyping of SNPs near indels
 prepare_genotyping_indelflagged() {
 
     # Sort, compress and index VCF files for inputting them to Platypus
-    for FILE in `ls $OUTDIR/4_merged/IndelExcludedSNPs_allele?.vcf`; do
+    for FILE in `ls $OUTDIR/5-7_merged/IndelExcludedSNPs_allele?.vcf`; do
         vcf-sort $FILE > "${FILE%.*}".sorted.vcf 2> /dev/null
         bgzip "${FILE%.*}".sorted.vcf
         tabix -p vcf "${FILE%.*}".sorted.vcf.gz
@@ -298,16 +304,16 @@ prepare_genotyping_indelflagged() {
     # If the user input a regions file:
     # Extract only regions (exons, in principle) containing variants
     if [ "$REGIONS" != "no" ]; then
-        Somatypus_ExtractExons.py $REGIONS $OUTDIR/4_merged/IndelExcludedSNPs_allele1.vcf $OUTDIR/4_merged/IndelExcludedSNPs_allele2.vcf $OUTDIR/4_merged/IndelExcludedSNPs_allele3.vcf $OUTDIR/5_genotyped 1 > $OUTDIR/logs/14_extract_exons_excluded.log
+        Somatypus_ExtractExons.py $REGIONS $OUTDIR/5-7_merged/IndelExcludedSNPs_allele1.vcf $OUTDIR/5-7_merged/IndelExcludedSNPs_allele2.vcf $OUTDIR/5-7_merged/IndelExcludedSNPs_allele3.vcf $OUTDIR/8-17_genotyped 1 > $OUTDIR/logs/12_extract_exons_excluded.log
     fi
 
     # Create list of BAM files for Platypus
-    ls -1 $BAMSDIR/*.bam > $OUTDIR/5_genotyped/bam_list.txt
+    ls -1 $BAMSDIR/*.bam > $OUTDIR/8-17_genotyped/bam_list.txt
 
 }
 
 
-# 10) genotyping_indelflagged()
+# 13-15) genotyping_indelflagged()
 # Runs Platypus to genotype SNPs excluded for being close to indels
 # INPUT: $1 - Number of the allele to be genotyped (1, 2 or 3)
 genotyping_indelflagged() {
@@ -317,47 +323,49 @@ genotyping_indelflagged() {
     # If the user input a regions file: include the --regions argument
     REGIONSARG=""
     if [ "$REGIONS" != "no" ]; then
-        REGIONSARG="--regions=$OUTDIR/5_genotyped/regions_allele${IND}_indelExcluded.txt"
+        REGIONSARG="--regions=$OUTDIR/8-17_genotyped/regions_allele${IND}_indelExcluded.txt"
     fi
 
     # Run Platypus to genotype the specified allele
     Platypus.py callVariants \
-    --logFileName=$OUTDIR/logs/$(( 14 + $IND ))_genotype_first_allele${IND}_indelExcluded.log \
+    --logFileName=$OUTDIR/logs/$(( 12 + $IND )).1_genotype_first_allele${IND}_indelExcluded.log \
     --refFile=$REFERENCE \
     $REGIONSARG \
-    --bamFiles=$OUTDIR/5_genotyped/bam_list.txt \
+    --bamFiles=$OUTDIR/8-17_genotyped/bam_list.txt \
     --minPosterior=0 \
     --nCPU=$CPUS \
     --minReads=3 \
-    --source=$OUTDIR/4_merged/IndelExcludedSNPs_allele${IND}.sorted.vcf.gz \
+    --source=$OUTDIR/5-7_merged/IndelExcludedSNPs_allele${IND}.sorted.vcf.gz \
     --getVariantsFromBAMs=0 \
-    -o $OUTDIR/5_genotyped/GenotypedSNPs_indelExcluded_first_allele${IND}.vcf
+    $EXTRA \
+    -o $OUTDIR/8-17_genotyped/GenotypedSNPs_indelExcluded_first_allele${IND}.vcf
 
     # (Some calls may not be genotyped due to the way Platypus builds haplotypes)
     # Extract missing calls by comparing merged and genotyped VCFs
-    tail -n +49 $OUTDIR/5_genotyped/GenotypedSNPs_indelExcluded_first_allele${IND}.vcf | cut -f1,2,4,5 > $OUTDIR/geno_pos.txt
-    cut -f1,2,4,5 $OUTDIR/4_merged/IndelExcludedSNPs_allele${IND}.vcf > $OUTDIR/merged_pos.txt
+    tail -n +49 $OUTDIR/8-17_genotyped/GenotypedSNPs_indelExcluded_first_allele${IND}.vcf | cut -f1,2,4,5 > $OUTDIR/geno_pos.txt
+    cut -f1,2,4,5 $OUTDIR/5-7_merged/IndelExcludedSNPs_allele${IND}.vcf > $OUTDIR/merged_pos.txt
     grep -vxFf $OUTDIR/geno_pos.txt $OUTDIR/merged_pos.txt > $OUTDIR/coords.txt
 
     # Create a new regions file containing only the bases of the missing variants
     # The size of the region is the length of the SNP/indel
-    awk '{if (length($3) >= length($4)) { print $1 ":" $2 "-" $2+length($3)-1 } else { print $1 ":" $2 "-" $2+length($4)-1 }}' $OUTDIR/coords.txt > $OUTDIR/5_genotyped/SNPregions_allele${IND}_indelExcluded.txt
+    awk '{if (length($3) >= length($4)) { print $1 ":" $2 "-" $2+length($3)-1 } else { print $1 ":" $2 "-" $2+length($4)-1 }}' $OUTDIR/coords.txt > $OUTDIR/8-17_genotyped/SNPregions_allele${IND}_indelExcluded.txt
     rm $OUTDIR/geno_pos.txt $OUTDIR/merged_pos.txt $OUTDIR/coords.txt
 
     # If there are missing calls: run Platypus to re-genotype them
-    if [ -s $OUTDIR/5_genotyped/SNPregions_allele${IND}_indelExcluded.txt ]; then
+    if [ -s $OUTDIR/8-17_genotyped/SNPregions_allele${IND}_indelExcluded.txt ]; then
         echo -e "\nGenotyping missing calls in allele $IND\n"
         Platypus.py callVariants \
-        --logFileName=$OUTDIR/logs/$(( 17 + $IND ))_genotype_snpRegions_allele${IND}_indelExcluded.log \
+        --logFileName=$OUTDIR/logs/$(( 12 + $IND )).2_genotype_snpRegions_allele${IND}_indelExcluded.log \
         --refFile=$REFERENCE \
-        --bamFiles=$OUTDIR/5_genotyped/bam_list.txt \
-        --regions=$OUTDIR/5_genotyped/SNPregions_allele${IND}_indelExcluded.txt \
+        --bamFiles=$OUTDIR/8-17_genotyped/bam_list.txt \
+        --regions=$OUTDIR/8-17_genotyped/SNPregions_allele${IND}_indelExcluded.txt \
         --minPosterior=0 \
         --nCPU=$CPUS \
         --minReads=3 \
-        --source=$OUTDIR/4_merged/IndelExcludedSNPs_allele${IND}.sorted.vcf.gz \
+        --source=$OUTDIR/5-7_merged/IndelExcludedSNPs_allele${IND}.sorted.vcf.gz \
         --getVariantsFromBAMs=0 \
-        -o $OUTDIR/5_genotyped/GenotypedSNPs_indelExcluded_second_allele${IND}.vcf
+        $EXTRA \
+        -o $OUTDIR/8-17_genotyped/GenotypedSNPs_indelExcluded_second_allele${IND}.vcf
     else
         echo -e "\nNo missing calls"
     fi
@@ -365,50 +373,50 @@ genotyping_indelflagged() {
 }
 
 
-# 11) merge_filter_indelflagged()
+# 16) merge_filter_indelflagged()
 # Merges and filters genotyped SNPs which are flagged for being close to indels
 merge_filter_indelflagged() {
 
     # Collect all the genotyped indel-excluded SNPs in a single file
     # Header
-    head -48 $OUTDIR/5_genotyped/GenotypedSNPs_indelExcluded_first_allele1.vcf > $OUTDIR/5_genotyped/GenotypedSNPs_indelExcluded_merged.vcf
+    head -48 $OUTDIR/8-17_genotyped/GenotypedSNPs_indelExcluded_first_allele1.vcf > $OUTDIR/8-17_genotyped/GenotypedSNPs_indelExcluded_merged.vcf
     # Content
-    tail -q -n +49 $OUTDIR/5_genotyped/GenotypedSNPs_indelExcluded_first_allele?.vcf >> $OUTDIR/5_genotyped/GenotypedSNPs_indelExcluded_merged.vcf 2> /dev/null
-    tail -q -n +49 $OUTDIR/5_genotyped/GenotypedSNPs_indelExcluded_second_allele?.vcf >> $OUTDIR/5_genotyped/GenotypedSNPs_indelExcluded_merged.vcf 2> /dev/null
+    tail -q -n +49 $OUTDIR/8-17_genotyped/GenotypedSNPs_indelExcluded_first_allele?.vcf >> $OUTDIR/8-17_genotyped/GenotypedSNPs_indelExcluded_merged.vcf 2> /dev/null
+    tail -q -n +49 $OUTDIR/8-17_genotyped/GenotypedSNPs_indelExcluded_second_allele?.vcf >> $OUTDIR/8-17_genotyped/GenotypedSNPs_indelExcluded_merged.vcf 2> /dev/null
 
     # Filter calls with flags badReads, MQ, strandBias, SC or QD
-    awk '!(($7 ~ /badReads/) || ($7 ~ /MQ/) || ($7 ~ /strandBias/) || ($7 ~ /SC/) || ($7 ~ /QD/))' $OUTDIR/5_genotyped/GenotypedSNPs_indelExcluded_merged.vcf > $OUTDIR/5_genotyped/GenotypedSNPs_indelExcluded_merged.filtered.vcf
+    awk '!(($7 ~ /badReads/) || ($7 ~ /MQ/) || ($7 ~ /strandBias/) || ($7 ~ /SC/) || ($7 ~ /QD/))' $OUTDIR/8-17_genotyped/GenotypedSNPs_indelExcluded_merged.vcf > $OUTDIR/8-17_genotyped/GenotypedSNPs_indelExcluded_merged.filtered.vcf
 
     # Filter indel-flagged SNPs with median read coverage <20, median VAF <0.2 or median VAF >0.9
-    Somatypus_IndelRescuedFilter.py $OUTDIR/5_genotyped/GenotypedSNPs_indelExcluded_merged.filtered.vcf > $OUTDIR/logs/21_indel_rescued_filter.log
+    Somatypus_IndelRescuedFilter.py $OUTDIR/8-17_genotyped/GenotypedSNPs_indelExcluded_merged.filtered.vcf > $OUTDIR/logs/16_indel_rescued_filter.log
 
 }
 
 
-# 12) merge_filter_all()
+# 17) merge_filter_all()
 # Merges and filters all genotyped SNPs to create the output VCF file
 merge_filter_all() {
 
     # Collect all the genotyped SNPs and indels in a single file
     # Header
-    head -48 $OUTDIR/5_genotyped/GenotypedSNPs_first_allele1.vcf > $OUTDIR/5_genotyped/GenotypedVariants_merged.vcf
+    head -48 $OUTDIR/8-17_genotyped/GenotypedSNPs_first_allele1.vcf > $OUTDIR/8-17_genotyped/GenotypedVariants_merged.vcf
     # Content
-    tail -q -n +49 $OUTDIR/5_genotyped/GenotypedSNPs_first_allele?.vcf >> $OUTDIR/5_genotyped/GenotypedVariants_merged.vcf 2> /dev/null
-    tail -q -n +49 $OUTDIR/5_genotyped/GenotypedSNPs_second_allele?.vcf >> $OUTDIR/5_genotyped/GenotypedVariants_merged.vcf 2> /dev/null
-    tail -n +49 $OUTDIR/5_genotyped/GenotypedSNPs_indelExcluded_merged.filtered.VAFfilt.vcf >> $OUTDIR/5_genotyped/GenotypedVariants_merged.vcf
+    tail -q -n +49 $OUTDIR/8-17_genotyped/GenotypedSNPs_first_allele?.vcf >> $OUTDIR/8-17_genotyped/GenotypedVariants_merged.vcf 2> /dev/null
+    tail -q -n +49 $OUTDIR/8-17_genotyped/GenotypedSNPs_second_allele?.vcf >> $OUTDIR/8-17_genotyped/GenotypedVariants_merged.vcf 2> /dev/null
+    tail -n +49 $OUTDIR/8-17_genotyped/GenotypedSNPs_indelExcluded_merged.filtered.VAFfilt.vcf >> $OUTDIR/8-17_genotyped/GenotypedVariants_merged.vcf
 
     # Filter calls with flags badReads, MQ, strandBias, SC or QD
-    awk '!(($7 ~ /badReads/) || ($7 ~ /MQ/) || ($7 ~ /strandBias/) || ($7 ~ /SC/) || ($7 ~ /QD/))' $OUTDIR/5_genotyped/GenotypedVariants_merged.vcf > $OUTDIR/5_genotyped/GenotypedVariants_merged.filtered.vcf
+    awk '!(($7 ~ /badReads/) || ($7 ~ /MQ/) || ($7 ~ /strandBias/) || ($7 ~ /SC/) || ($7 ~ /QD/))' $OUTDIR/8-17_genotyped/GenotypedVariants_merged.vcf > $OUTDIR/8-17_genotyped/GenotypedVariants_merged.filtered.vcf
 
     # Some 2-bp MNPs (containing just 1 SNP) can be caused by indels and SNPs sharing position; they can be split without problems
-    Somatypus_SplitMA-MNPs.py $OUTDIR/5_genotyped/GenotypedVariants_merged.filtered.vcf > $OUTDIR/logs/22_final_split.log
+    Somatypus_SplitMA-MNPs.py $OUTDIR/8-17_genotyped/GenotypedVariants_merged.filtered.vcf > $OUTDIR/logs/17.1_final_split.log
 
     # Filter variants with a VAF >0.9 in all samples
-    Somatypus_VafFilter.py $OUTDIR/5_genotyped/GenotypedVariants_merged.filtered.split.vcf > $OUTDIR/logs/23_VAF_filter.log
+    Somatypus_VafFilter.py $OUTDIR/8-17_genotyped/GenotypedVariants_merged.filtered.split.vcf > $OUTDIR/logs/17.2_VAF_filter.log
 
     # Sort VCFs
-    vcf-sort $OUTDIR/5_genotyped/GenotypedVariants_merged.filtered.split.VAFfilt_SNPs.vcf > $OUTDIR/Somatypus_SNPs_final.vcf 2> /dev/null
-    vcf-sort $OUTDIR/5_genotyped/GenotypedVariants_merged.filtered.split.VAFfilt_Indels.vcf > $OUTDIR/Somatypus_Indels_final.vcf 2> /dev/null
+    vcf-sort $OUTDIR/8-17_genotyped/GenotypedVariants_merged.filtered.split.VAFfilt_SNPs.vcf > $OUTDIR/Somatypus_SNPs_final.vcf 2> /dev/null
+    vcf-sort $OUTDIR/8-17_genotyped/GenotypedVariants_merged.filtered.split.VAFfilt_Indels.vcf > $OUTDIR/Somatypus_Indels_final.vcf 2> /dev/null
         
 }
 
@@ -429,7 +437,8 @@ REFERENCE=""
 REGIONS="no"
 OUTDIR=""
 CPUS=1
-while getopts ":i:g:r:o:c:h?" OPT; do
+EXTRA=""
+while getopts ":i:g:r:o:c:p:hv?" OPT; do
   case $OPT in
     i)
       BAMSDIR=$OPTARG
@@ -446,8 +455,15 @@ while getopts ":i:g:r:o:c:h?" OPT; do
     c)
       CPUS=$OPTARG
       ;;
+    p)
+      EXTRA=$OPTARG
+      ;;
     h)
       print_help
+      exit 0
+      ;;
+    v)
+      echo "Somatypus $VERSION"
       exit 0
       ;;
     \?)
@@ -479,11 +495,9 @@ if [ -z "$OUTDIR" ]; then
 fi
 
 
-echo -e "\n\n* This is Somatypus $VERSION *\n"
-
-
-# Check input validity: 
-# Input files exist; FASTA is indexed; there are input BAMs; all BAMs are indexed; CPUS >0
+# Sanity checks: 
+# Check that: Input files exist; FASTA is indexed; there are input BAMs; all BAMs are indexed; CPUS >0;
+# extra Platypus options do not contain options used within the pipeline
 if [ ! -s $REFERENCE ]; then
     echo -e "ERROR: Reference FASTA file not found or empty. Please check the path.\n" >&2
     exit 1
@@ -501,6 +515,11 @@ fi
 
 if ! [[ $CPUS =~ ^[1-9]+[0-9]*$ ]]; then
     echo -e "ERROR: Number of CPUs must be greater than 0\n" >&2
+    exit 1
+fi
+
+if echo "$EXTRA" | grep -q -E "\-\-logFileName|\-\-refFile|\-\-bamFiles|\-\-regions|\-\-minPosterior|\-\-minReads|\-\-minFlank|\-\-trimReadFlank|\-\-source|\-\-getVariantsFromBAMs|\-\-nCPU|\-\-output=|\-o " ; then 
+    echo -e "ERROR: Additional Platypus options cannot include --logFileName, --refFile, --bamFiles, --regions, --minPosterior, --minReads, --minFlank, --trimReadFlank, --source, --getVariantsFromBAMs, --nCPU, --output, or -o.\n" >&2
     exit 1
 fi
 
@@ -534,14 +553,16 @@ hash Somatypus_SplitMA-MNPs.py 2>/dev/null || { echo -e "\nERROR: Somatypus dire
 # START RUNNING
 # Copy all standard out and standard error to log file
 mkdir -p $OUTDIR/logs
-exec &> >(tee -ia $OUTDIR/logs/SOMATYPUS.log)
+exec &> >(tee -ia $OUTDIR/logs/SOMATYPUS_`date +"%y%m%d%H%M"`.log)
 
+echo -e "\nThis is Somatypus $VERSION\n"
 
 echo "Input BAMs directory:   $BAMSDIR"
 echo "Input reference genome: $REFERENCE"
 echo "Input regions file:     $REGIONS"
 echo "Output directory:       $OUTDIR"
 echo "Number of CPUs to use:  $CPUS"
+echo "Extra Platypus options: $EXTRA"
 
 
 # Check if there is a checkpoint file from a previous run in the output folder
@@ -568,10 +589,11 @@ if [ "$STEP" -lt 1 ]; then
     # Check successful execution
     for FILE in `ls $BAMSDIR/*.bam`; do 
         NAME=`basename $FILE`
-        check_file $OUTDIR/1_individual_calls/platypusVariants_"${NAME%.*}"_default.vcf
+        check_file $OUTDIR/1-2_individual_calls/platypusVariants_"${NAME%.*}"_default.vcf
     done
     
     # Update checkpoint file
+    echo -e "\nSuccess"
     echo "1 individual_calling_default" >> $OUTDIR/logs/CHECKPOINT
 
 fi
@@ -586,10 +608,11 @@ if [ "$STEP" -lt 2 ]; then
     # Check successful execution
     for FILE in `ls $BAMSDIR/*.bam`; do 
         NAME=`basename $FILE`
-        check_file $OUTDIR/1_individual_calls/platypusVariants_"${NAME%.*}"_alternative.vcf
+        check_file $OUTDIR/1-2_individual_calls/platypusVariants_"${NAME%.*}"_alternative.vcf
     done
     
     # Update checkpoint file
+    echo -e "\nSuccess"
     echo "2 individual_calling_alternative" >> $OUTDIR/logs/CHECKPOINT
 
 fi
@@ -602,46 +625,49 @@ if [ "$STEP" -lt 3 ]; then
     split_calls
     
     # Check successful execution
-    for FILE in `ls $OUTDIR/1_individual_calls/platypusVariants_*`; do
+    for FILE in `ls $OUTDIR/1-2_individual_calls/platypusVariants_*`; do
         NAME=`basename $FILE`
-        check_file $OUTDIR/2_individual_split/"${NAME%.*}".split.vcf
+        check_file $OUTDIR/3_individual_split/"${NAME%.*}".split.vcf
     done
 
     # Update checkpoint file
+    echo -e "\nSuccess"
     echo "3 split_calls" >> $OUTDIR/logs/CHECKPOINT
 
 fi
 
 
-# 4. IDENTIFY SNPS CLOSE TO INDELS IN ANY SAMPLE
+# 4. FILTER INDIVIDUAL CALLS
 if [ "$STEP" -lt 4 ]; then
 
-    echo -e "\n(4) FLAGGING SNPS CLOSE TO INDELS IN ANY SAMPLE"
-    indel_flag
+    echo -e "\n(4) FILTERING INDIVIDUAL CALLS"
+    filter_calls
 
     # Check successful execution
-    check_file $OUTDIR/4_merged/indel_flagged_SNPs.txt
+    for FILE in `ls $OUTDIR/3_individual_split/platypusVariants_*`; do
+        NAME=`basename $FILE`
+        check_file $OUTDIR/4_individual_filtered/"${NAME%.*}".filtered.vcf
+    done
 
     # Update checkpoint file
-    echo "4 indel_flag" >> $OUTDIR/logs/CHECKPOINT
+    echo -e "\nSuccess"
+    echo "4 filter_calls" >> $OUTDIR/logs/CHECKPOINT
 
 fi
 
 
-# 5. FILTER INDIVIDUAL CALLS
+# 5. IDENTIFY SNPS CLOSE TO INDELS IN ANY SAMPLE
 if [ "$STEP" -lt 5 ]; then
 
-    echo -e "\n(5) FILTERING INDIVIDUAL CALLS"
-    filter_calls
+    echo -e "\n(5) FLAGGING SNPS CLOSE TO INDELS IN ANY SAMPLE (USING UNFILTERED DATA)"
+    indel_flag
 
     # Check successful execution
-    for FILE in `ls $OUTDIR/2_individual_split/platypusVariants_*`; do
-        NAME=`basename $FILE`
-        check_file $OUTDIR/3_individual_filtered/"${NAME%.*}".filtered.vcf
-    done
+    check_file $OUTDIR/5-7_merged/indel_flagged_SNPs.txt
 
     # Update checkpoint file
-    echo "5 filter_calls" >> $OUTDIR/logs/CHECKPOINT
+    echo -e "\nSuccess"
+    echo "5 indel_flag" >> $OUTDIR/logs/CHECKPOINT
 
 fi
 
@@ -653,10 +679,11 @@ if [ "$STEP" -lt 6 ]; then
     merge_calls
 
     # Check successful execution
-    check_file $OUTDIR/4_merged/MergedSNPs_allele1.vcf
-    check_file $OUTDIR/4_merged/IndelExcludedSNPs_allele1.vcf
+    check_file $OUTDIR/5-7_merged/MergedSNPs_allele1.vcf
+    check_file $OUTDIR/5-7_merged/IndelExcludedSNPs_allele1.vcf
     
     # Update checkpoint file
+    echo -e "\nSuccess"
     echo "6 merge_calls" >> $OUTDIR/logs/CHECKPOINT
 
 fi
@@ -669,9 +696,10 @@ if [ "$STEP" -lt 7 ]; then
     extract_indels
     
     # Check successful execution
-    check_file $OUTDIR/4_merged/MergedIndels.vcf
+    check_file $OUTDIR/5-7_merged/MergedIndels.vcf
 
     # Update checkpoint file
+    echo -e "\nSuccess"
     echo "7 extract_indels" >> $OUTDIR/logs/CHECKPOINT
 
 fi
@@ -684,22 +712,23 @@ if [ "$STEP" -lt 8 ]; then
     prepare_genotyping
     
     # Check successful execution
-    for FILE in `ls $OUTDIR/4_merged/MergedSNPs_allele?.vcf`; do
+    for FILE in `ls $OUTDIR/5-7_merged/MergedSNPs_allele?.vcf`; do
         check_file "${FILE%.*}".sorted.vcf.gz
         check_file "${FILE%.*}".sorted.vcf.gz.tbi
     done
     if [ "$REGIONS" != "no" ]; then
-        check_file $OUTDIR/5_genotyped/regions_allele1.txt
+        check_file $OUTDIR/8-17_genotyped/regions_allele1.txt
     fi
-    check_file $OUTDIR/5_genotyped/bam_list.txt
+    check_file $OUTDIR/8-17_genotyped/bam_list.txt
     
     # Update checkpoint file
+    echo -e "\nSuccess"
     echo "8 prepare_genotyping" >> $OUTDIR/logs/CHECKPOINT
 
 fi
 
 
-# 9/10/11. GENOTYPE VARIANTS IN ALLELE 1/2/3
+# 9-11. GENOTYPE VARIANTS IN ALLELE 1/2/3
 for ALL in `seq 1 3`; do
     if [ "$STEP" -lt $(( 8 + $ALL )) ]; then
 
@@ -707,9 +736,10 @@ for ALL in `seq 1 3`; do
         genotyping $ALL
         
         # Check successful execution
-        check_file $OUTDIR/5_genotyped/GenotypedSNPs_first_allele${ALL}.vcf
+        check_file $OUTDIR/8-17_genotyped/GenotypedSNPs_first_allele${ALL}.vcf
         
         # Update checkpoint file
+        echo -e "\nSuccess"
         echo "$(( 8 + $ALL )) genotyping_allele$ALL" >> $OUTDIR/logs/CHECKPOINT
 
     fi
@@ -723,22 +753,23 @@ if [ "$STEP" -lt 12 ]; then
     prepare_genotyping_indelflagged
     
     # Check successful execution
-    for FILE in `ls $OUTDIR/4_merged/IndelExcludedSNPs_allele?.vcf`; do
+    for FILE in `ls $OUTDIR/5-7_merged/IndelExcludedSNPs_allele?.vcf`; do
         check_file "${FILE%.*}".sorted.vcf.gz
         check_file "${FILE%.*}".sorted.vcf.gz.tbi
     done
     if [ "$REGIONS" != "no" ]; then
-        check_file $OUTDIR/5_genotyped/regions_allele1_indelExcluded.txt
+        check_file $OUTDIR/8-17_genotyped/regions_allele1_indelExcluded.txt
     fi
-    check_file $OUTDIR/5_genotyped/bam_list.txt
+    check_file $OUTDIR/8-17_genotyped/bam_list.txt
     
     # Update checkpoint file
+    echo -e "\nSuccess"
     echo "12 prepare_genotyping_indelflagged" >> $OUTDIR/logs/CHECKPOINT
 
 fi
 
 
-# 13/14/15. GENOTYPE INDEL-EXCLUDED VARIANTS IN ALLELE 1/2/3
+# 13-15. GENOTYPE INDEL-EXCLUDED VARIANTS IN ALLELE 1/2/3
 for ALL in `seq 1 3`; do
     if [ "$STEP" -lt $(( 12 + $ALL )) ]; then
 
@@ -746,9 +777,10 @@ for ALL in `seq 1 3`; do
         genotyping_indelflagged $ALL
 
         # Check successful execution
-        check_file $OUTDIR/5_genotyped/GenotypedSNPs_indelExcluded_first_allele${ALL}.vcf
+        check_file $OUTDIR/8-17_genotyped/GenotypedSNPs_indelExcluded_first_allele${ALL}.vcf
 
         # Update checkpoint file
+        echo -e "\nSuccess"
         echo "$(( 12 + $ALL )) genotyping_indelflagged_allele$ALL" >> $OUTDIR/logs/CHECKPOINT
 
     fi
@@ -762,9 +794,10 @@ if [ "$STEP" -lt 16 ]; then
     merge_filter_indelflagged
     
     # Check successful execution
-    check_file $OUTDIR/5_genotyped/GenotypedSNPs_indelExcluded_merged.filtered.VAFfilt.vcf
+    check_file $OUTDIR/8-17_genotyped/GenotypedSNPs_indelExcluded_merged.filtered.VAFfilt.vcf
     
     # Update checkpoint file
+    echo -e "\nSuccess"
     echo "16 merge_filter_indelflagged" >> $OUTDIR/logs/CHECKPOINT
 
 fi
@@ -781,6 +814,7 @@ if [ "$STEP" -lt 17 ]; then
     check_file $OUTDIR/Somatypus_Indels_final.vcf
     
     # Update checkpoint file
+    echo -e "\nSuccess"
     echo "17 merge_filter_all" >> $OUTDIR/logs/CHECKPOINT
 
 fi

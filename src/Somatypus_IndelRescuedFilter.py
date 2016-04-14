@@ -22,7 +22,6 @@ computed only in samples with at least 3 reads supporting the variant.
 
 
 import sys
-import gzip
 import os
 import re
 

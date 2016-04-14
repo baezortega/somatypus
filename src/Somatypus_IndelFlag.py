@@ -20,7 +20,6 @@ to an indel in any sample, from multiple Platypus VCFs, and write them into an o
 
 
 import sys
-import gzip
 import os
 import re
 from sets import Set

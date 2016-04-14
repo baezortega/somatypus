@@ -22,7 +22,6 @@ indels to two different output files.
 """
 
 import sys
-import gzip
 import os
 import re
 

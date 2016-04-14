@@ -22,7 +22,6 @@ For multiallelic SNPs, it outputs extra alleles to different files for independe
 
 
 import sys
-import gzip
 import os
 import re
 from sets import Set

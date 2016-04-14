@@ -21,10 +21,8 @@ a new VCF file.
 
 
 import sys
-import gzip
 import os
 import re
-from sets import Set
 
 
 # If not 2 arguments: print help

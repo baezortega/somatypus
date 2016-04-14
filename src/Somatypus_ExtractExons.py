@@ -26,7 +26,6 @@ consequently output to 3 different files, according to the alleles they contain.
 
 
 import sys
-import gzip
 import os
 import re
 

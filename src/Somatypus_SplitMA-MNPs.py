@@ -19,7 +19,6 @@ and multiallelic variant calls into individual variant calls on different record
 
 
 import sys
-import gzip
 import os
 import re
 

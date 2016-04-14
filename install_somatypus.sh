@@ -1,9 +1,9 @@
 # INSTALLING SOMATYPUS AND DEPENDENCIES
 # Adrian Baez-Ortega
-# 04/02/2016
+# 14/04/2016
 
 
-# This script installs Somatypus and all its dependencies.
+# This script installs Somatypus and all its dependencies (in a personal computer).
 #
 # Before running this script, you should:
 #
@@ -125,9 +125,9 @@ hash somatypus 2>/dev/null || {
 # To try Somatypus: "somatypus"
 hash somatypus 2>/dev/null || { echo -e "\nThere was a problem adding the Somatypus directories to the PATH. If the lines above do not provide further information, please run this script line-by-line to find the problem.\n" >&2; exit 1; }    
 
-echo "export LD_LIBRARY_PATH=$LIBSTR" >> ~/.profile
-echo "export PATH=$PATHSTR" >> ~/.profile
+echo "export LD_LIBRARY_PATH=$LIBSTR" >> ~/.bashrc
+echo "export PATH=$PATHSTR" >> ~/.bashrc
 
 cd $INIDIR
-echo -e "\nInstallation completed!\nNow, type:\n\nsource ~/.profile\nsomatypus\n"
+echo -e "\nInstallation completed!\nNow, type:\n\nsource ~/.bashrc\nsomatypus\n"
 
