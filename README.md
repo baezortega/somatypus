@@ -85,107 +85,98 @@ must be used.
 The recommended installation order is:
 
 
- __1. Python >=2.6__
+  __1. Python >=2.6__
  
-    Python is normally installed by default in most UNIX systems. However, in order to run Platypus, you need to install the Python development libraries.  
-    On Debian or Ubuntu Linux, you can install them with:
+  Python is normally installed by default in most UNIX systems. However, in order to run Platypus, you need to install the Python development libraries.  
+  On Debian or Ubuntu Linux, you can install them with:
     
-        sudo apt-get install python-dev
-        
-    On RPM-based Linux distributions, you can install them with:
+    sudo apt-get install python-dev
     
-        sudo yum install python-devel
+  On RPM-based Linux distributions, you can install them with:
+
+    sudo yum install python-devel
 
 
- __2. zlib (development files)__
+  __2. zlib (development files)__
  
-    If you have trouble installing htslib (below), you probably need to install this first.  
-    On Debian or Ubuntu Linux, you can install the corresponding package with:
+  If you have trouble installing htslib (below), you probably need to install this first.  
+  On Debian or Ubuntu Linux, you can install the corresponding package with:
+
+    sudo apt-get install zlib1g-dev
     
-        sudo apt-get install zlib1g-dev
-        
-    On RPM-based Linux distributions, you can install it with:
-    
-        sudo yum install zlib-devel
+  On RPM-based Linux distributions, you can install it with:
+
+    sudo yum install zlib-devel
 
 
- __3. htslib__
+  __3. htslib__
  
-    This is necessary in order to run Platypus.  
-    Latest version as of April 2016: https://github.com/samtools/htslib/releases/download/1.3/htslib-1.3.tar.bz2  
-    Once downloaded and uncompressed, you can install it with:
+  This is necessary in order to run Platypus.  
+  Latest version as of April 2016: https://github.com/samtools/htslib/releases/download/1.3/htslib-1.3.tar.bz2  
+  Once downloaded and uncompressed, you can install it with:
+
+    cd path/to/htslib-x.x
+    ./configure
+    make
+    sudo make install
+
+  After this, you need to add the htslib directory to your LD_LIBRARY_PATH environment variable. You can do this either by editing your ~/.bashrc file with a text editor (e.g. nano) and adding the following line:
+
+    export LD_LIBRARY_PATH=/*FULL/PATH/TO*/htslib-x.x:$LD_LIBRARY_PATH
+
+  Or just by appending the relevant line to the file with:
+
+    cd path/to/htslib-x.x
+    echo "export LD_LIBRARY_PATH=$PWD:\$LD_LIBRARY_PATH" >> ~/.bashrc
+   
+  Either way, it is then necessary to source the .bashrc file for the changes to be applied:
+
+    source ~/.bashrc
+
+
+  __4. Platypus__
+ 
+  This is the best and the worst part of the pipeline.  
+  Latest version: http://www.well.ox.ac.uk/software-download-registration  
+  Once downloaded and uncompressed, you can install it with:
+
+    cd path/to/Platypus_x.x.x
+    ./buildPlatypus.sh
+
+  If installation is successful, you will see the message "Finished building Platypus". After this, you need to make a symbolic link to the Platypus executable file in the somatypus-x.x/src folder (which will be then added to the PATH variable, see below).
+
+    cd path/to/Platypus_x.x.x
+    ln -s $PWD/Platypus.py path/to/somatypus-x.x/src/
+
+
+  __5. VCFtools__
+ 
+  On Debian or Ubuntu Linux, you can install the corresponding package with:
+
+    sudo apt-get install vcftools
     
-        cd path/to/htslib-x.x
-        ./configure
-        make
-        sudo make install
+  On RPM-based Linux distributions, you can install it with:
+
+    sudo yum install vcftools
     
-    After this, you need to add the htslib directory to your LD_LIBRARY_PATH environment
-    variable. You can do this either by editing your ~/.bashrc file with a text editor 
-    (e.g. nano) and adding the following line:
-    
-        export LD_LIBRARY_PATH=/*FULL/PATH/TO*/htslib-x.x:$LD_LIBRARY_PATH
-    
-    Or just by appending the relevant line to the file with:
-    
-        cd path/to/htslib-x.x
-        echo "export LD_LIBRARY_PATH=$PWD:\$LD_LIBRARY_PATH" >> ~/.bashrc
-       
-    Either way, it is then necessary to source the .bashrc file for the changes to be 
-    applied:
+
+  __6. Somatypus__
+ 
+  The last step is adding the Somatypus directory to your PATH environment variable, so that the somatypus command can be called from the command line. You can do this either by editing your ~/.bashrc file with a text editor (e.g. nano) and adding the line:
+
+    export PATH=/*FULL/PATH/TO*/somatypus-x.x/src:$PATH
+
+  Or just by appending the relevant line to the file with:
+
+    cd path/to/somatypus-x.x
+    echo "export PATH=$PWD/src:\$PATH" >> ~/.bashrc
+   
+  Either way, it is then necessary to source the .bashrc file for the changes to be applied:
     
         source ~/.bashrc
 
 
- __4. Platypus__
- 
-    This is the best and the worst part of the pipeline.  
-    Latest version: http://www.well.ox.ac.uk/software-download-registration  
-    Once downloaded and uncompressed, you can install it with:
-    
-        cd path/to/Platypus_x.x.x
-        ./buildPlatypus.sh
-    
-    If installation is successful, you will see the message "Finished building Platypus".
-    After this, you need to make a symbolic link to the Platypus executable file in the
-    somatypus-x.x/src folder (which will be then added to the PATH variable, see below).
-    
-        cd path/to/Platypus_x.x.x
-        ln -s $PWD/Platypus.py path/to/somatypus-x.x/src/
-
-
- __5. VCFtools__
- 
-    On Debian or Ubuntu Linux, you can install the corresponding package with:
-    
-        sudo apt-get install vcftools
-        
-    On RPM-based Linux distributions, you can install it with:
-    
-        sudo yum install vcftools
-    
-
- __6. Somatypus__
- 
-    The last step is adding the Somatypus directory to your PATH environment variable, so
-    that the somatypus command can be called from the command line. You can do this either
-    by editing your ~/.bashrc file with a text editor (e.g. nano) and adding the line:
-    
-        export PATH=/*FULL/PATH/TO*/somatypus-x.x/src:$PATH
-    
-    Or just by appending the relevant line to the file with:
-    
-        cd path/to/somatypus-x.x
-        echo "export PATH=$PWD/src:\$PATH" >> ~/.bashrc
-       
-    Either way, it is then necessary to source the .bashrc file for the changes to be 
-    applied:
-    
-        source ~/.bashrc
-
-
-Once all the dependencies and the pipeline have been installed, you should be able to run 
-all of the following commands (which show the usage information of each tool):
+Once all the dependencies and the pipeline have been installed, you should be able to run all of the following commands (which show the usage information of each tool):
 
     Platypus.py callVariants -h
     tabix
