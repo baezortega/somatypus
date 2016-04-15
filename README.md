@@ -164,7 +164,7 @@ The recommended installation order is:
  
     The last step is adding the Somatypus directory to your PATH environment variable, so that the somatypus command can be called from the command line. You can do this either by editing your ~/.bashrc file with a text editor (e.g. nano) and adding the line:
 
-    export PATH=/*FULL/PATH/TO*/somatypus-x.x/src:$PATH
+        export PATH=/*FULL/PATH/TO*/somatypus-x.x/src:$PATH
 
     Or just by appending the relevant line to the file with:
 
