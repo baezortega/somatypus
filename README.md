@@ -85,7 +85,7 @@ must be used.
 The recommended installation order is:
 
 
- 1. __Python >=2.6__
+ 1. __Python ≥2.6__
  
     Python is normally installed by default in most UNIX systems. However, in order to run Platypus, you need to install the Python development libraries.  
     On Debian or Ubuntu Linux, you can install them with:
