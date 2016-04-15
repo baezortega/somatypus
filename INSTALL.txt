@@ -19,7 +19,7 @@ thus making set-up straightforward. However, it has some minimal software depend
 
 For the sake of tidiness, it is advisable to create a folder called "somatypus" in the
 location where you usually install software, and install all the dependencies and the
-Somatypus pipeline itself (the "somatypus-x.x" folder) into it.
+Somatypus pipeline itself (the somatypus-x.x folder) into it.
 
 
 The following instructions assume that you have administrator privileges in the system 
