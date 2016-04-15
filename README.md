@@ -130,7 +130,7 @@ The recommended installation order is:
     variable. You can do this either by editing your ~/.bashrc file with a text editor 
     (e.g. nano) and adding the following line:
     
-        export LD_LIBRARY_PATH=/\*FULL/PATH/TO\*/htslib-x.x:$LD_LIBRARY_PATH
+        export LD_LIBRARY_PATH=/*FULL/PATH/TO*/htslib-x.x:$LD_LIBRARY_PATH
     
     Or just by appending the relevant line to the file with:
     
@@ -179,7 +179,7 @@ The recommended installation order is:
     that the somatypus command can be called from the command line. You can do this either
     by editing your ~/.bashrc file with a text editor (e.g. nano) and adding the line:
     
-        export PATH=/\*FULL/PATH/TO\*/somatypus-x.x/src:$PATH
+        export PATH=/*FULL/PATH/TO*/somatypus-x.x/src:$PATH
     
     Or just by appending the relevant line to the file with:
     
