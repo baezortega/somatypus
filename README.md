@@ -62,36 +62,35 @@ Somatypus has been designed as a set of Bash and Python scripts that do not requ
 installation, but simply adding the software directory to the PATH environment variable, 
 thus making set-up straightforward. However, it has some minimal software dependencies:
 
- • Python 2.6 or later (not tested on Python 3.X), including development libraries.
+* __Python 2.6 or later__ (not tested on Python 3.X), including development libraries.
 
- • Platypus (http://www.well.ox.ac.uk/platypus), which in turn requires htslib 
-   (http://www.htslib.org), which in turn requires zlib (http://zlib.net).
+* __Platypus__ (http://www.well.ox.ac.uk/platypus), which in turn requires __htslib__ (http://www.htslib.org), which in turn requires __zlib__ (http://zlib.net).
 
- • VCFtools (https://vcftools.github.io), for using the vcf-sort command.
+* __VCFtools__ (https://vcftools.github.io), for using the vcf-sort command.
 
- • The tabix package (http://sourceforge.net/projects/samtools/files/tabix), for using the 
-   tabix and bgzip commands. It should come together with htslib.
+* The __tabix__ package (http://sourceforge.net/projects/samtools/files/tabix), for using the tabix and bgzip commands. It should come together with htslib.
 
 
-For the sake of tidiness, it is advisable to create a folder called 'somatypus' in the
+For the sake of tidiness, it is advisable to create a folder called "somatypus" in the
 location where you usually install software, and install all the dependencies and the
-Somatypus pipeline itself (the 'somatypus-x.x' folder) into it.
+Somatypus pipeline itself (the "somatypus-x.x" folder) into it.
 
 
 The following instructions assume that you have administrator privileges in the system 
 you are using (i.e. that you can do "sudo"); otherwise, you should contact you system's
 administrator. Although it should be obvious, please note that you need to replace things
-like "path/to/" and "/*FULL/PATH/TO*/" with the actual path to the relevant folder.
-"/*FULL/PATH/TO*/" indicates that the absolute path (beginning at "/", e.g. /home/user/...)
+like "path/to/" and "/__FULL/PATH/TO__/" with the actual path to the relevant folder.
+"/__FULL/PATH/TO__/" indicates that the absolute path (beginning at "/", e.g. /home/user/...)
 must be used.
 
 
 The recommended installation order is:
 
 
- 1. Python >=2.6
-    Python is normally installed by default in most UNIX systems. However, in order to 
-    run Platypus, you need to install the Python development libraries.
+ 1. __Python >=2.6__
+ 
+    Python is normally installed by default in most UNIX systems. However, in order to run Platypus, you need to install the Python development libraries.
+    
     On Debian or Ubuntu Linux, you can install them with:
     
         sudo apt-get install python-dev
@@ -101,8 +100,10 @@ The recommended installation order is:
         sudo yum install python-devel
 
 
- 2. zlib (development files)
+ 2. __zlib (development files)__
+ 
     If you have trouble installing htslib (below), you probably need to install this first.
+    
     On Debian or Ubuntu Linux, you can install the corresponding package with:
     
         sudo apt-get install zlib1g-dev
@@ -112,10 +113,11 @@ The recommended installation order is:
         sudo yum install zlib-devel
 
 
- 3. htslib
+ 3. __htslib__
+ 
     This is necessary in order to run Platypus.
-    Latest version as of April 2016: 
-    https://github.com/samtools/htslib/releases/download/1.3/htslib-1.3.tar.bz2
+    
+    Latest version as of April 2016: https://github.com/samtools/htslib/releases/download/1.3/htslib-1.3.tar.bz2
 
     Once downloaded and uncompressed, you can install it with:
     
@@ -128,7 +130,7 @@ The recommended installation order is:
     variable. You can do this either by editing your ~/.bashrc file with a text editor 
     (e.g. nano) and adding the following line:
     
-        export LD_LIBRARY_PATH=/*FULL/PATH/TO*/htslib-x.x:$LD_LIBRARY_PATH
+        export LD_LIBRARY_PATH=/__FULL/PATH/TO__/htslib-x.x:$LD_LIBRARY_PATH
     
     Or just by appending the relevant line to the file with:
     
@@ -141,8 +143,10 @@ The recommended installation order is:
         source ~/.bashrc
 
 
- 4. Platypus
+ 4. __Platypus__
+ 
     This is the best and the worst part of the pipeline.
+    
     Latest version: http://www.well.ox.ac.uk/software-download-registration
 
     Once downloaded and uncompressed, you can install it with:
@@ -158,7 +162,8 @@ The recommended installation order is:
         ln -s $PWD/Platypus.py path/to/somatypus-x.x/src/
 
 
- 5. VCFtools
+ 5. __VCFtools__
+ 
     On Debian or Ubuntu Linux, you can install the corresponding package with:
     
         sudo apt-get install vcftools
@@ -168,12 +173,13 @@ The recommended installation order is:
         sudo yum install vcftools
     
 
- 6. Somatypus
+ 6. __Somatypus__
+ 
     The last step is adding the Somatypus directory to your PATH environment variable, so
     that the somatypus command can be called from the command line. You can do this either
     by editing your ~/.bashrc file with a text editor (e.g. nano) and adding the line:
     
-        export PATH=/*FULL/PATH/TO*/somatypus-x.x/src:$PATH
+        export PATH=/__FULL/PATH/TO__/somatypus-x.x/src:$PATH
     
     Or just by appending the relevant line to the file with:
     
@@ -195,3 +201,4 @@ all of the following commands (which show the usage information of each tool):
     vcf-sort -h
     somatypus
 
+And now you can have fun.

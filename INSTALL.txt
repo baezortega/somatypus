@@ -17,9 +17,9 @@ thus making set-up straightforward. However, it has some minimal software depend
    tabix and bgzip commands. It should come together with htslib.
 
 
-For the sake of tidiness, it is advisable to create a folder called 'somatypus' in the
+For the sake of tidiness, it is advisable to create a folder called "somatypus" in the
 location where you usually install software, and install all the dependencies and the
-Somatypus pipeline itself (the 'somatypus-x.x' folder) into it.
+Somatypus pipeline itself (the "somatypus-x.x" folder) into it.
 
 
 The following instructions assume that you have administrator privileges in the system 
@@ -139,3 +139,5 @@ all of the following commands (which show the usage information of each tool):
     vcf-sort -h
     somatypus
 
+
+And now you can have fun.
