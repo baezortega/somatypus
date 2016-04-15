@@ -79,8 +79,8 @@ Somatypus pipeline itself (the "somatypus-x.x" folder) into it.
 The following instructions assume that you have administrator privileges in the system 
 you are using (i.e. that you can do "sudo"); otherwise, you should contact you system's
 administrator. Although it should be obvious, please note that you need to replace things
-like "path/to/" and "/__FULL/PATH/TO__/" with the actual path to the relevant folder.
-"/__FULL/PATH/TO__/" indicates that the absolute path (beginning at "/", e.g. /home/user/...)
+like "path/to/" and "/\*FULL/PATH/TO\*/" with the actual path to the relevant folder.
+"/\*FULL/PATH/TO\*/" indicates that the absolute path (beginning at "/", e.g. /home/user/...)
 must be used.
 
 
@@ -130,7 +130,7 @@ The recommended installation order is:
     variable. You can do this either by editing your ~/.bashrc file with a text editor 
     (e.g. nano) and adding the following line:
     
-        export LD_LIBRARY_PATH=/__FULL/PATH/TO__/htslib-x.x:$LD_LIBRARY_PATH
+        export LD_LIBRARY_PATH=/\*FULL/PATH/TO\*/htslib-x.x:$LD_LIBRARY_PATH
     
     Or just by appending the relevant line to the file with:
     
@@ -179,7 +179,7 @@ The recommended installation order is:
     that the somatypus command can be called from the command line. You can do this either
     by editing your ~/.bashrc file with a text editor (e.g. nano) and adding the line:
     
-        export PATH=/__FULL/PATH/TO__/somatypus-x.x/src:$PATH
+        export PATH=/\*FULL/PATH/TO\*/somatypus-x.x/src:$PATH
     
     Or just by appending the relevant line to the file with:
     
