@@ -160,7 +160,7 @@ The recommended installation order is:
         sudo yum install vcftools
     
 
-6. __Somatypus__
+ 6. __Somatypus__
  
     The last step is adding the Somatypus directory to your PATH environment variable, so that the somatypus command can be called from the command line. You can do this either by editing your ~/.bashrc file with a text editor (e.g. nano) and adding the line:
 
