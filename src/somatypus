@@ -35,8 +35,8 @@ print_help() {
     echo "|"    
     echo "| Required input:"
     echo "|    -i  Absolute path to folder containing the input BAM files (accompanied by BAI indices)."
-    echo "|    -o  Absolute path to the output folder (it will be created if needed)."
     echo "|    -g  Absolute path to reference genome FASTA file (accompanied by FAI index)."
+    echo "|    -o  Absolute path to the output folder (it will be created if needed)."
     echo "|"
     echo "| Optional input:"
     echo "|    -r  Absolute path to file of regions to use, one per line in CHR:START-END format."
@@ -499,44 +499,44 @@ fi
 # Check that: Input files exist; FASTA is indexed; there are input BAMs; all BAMs are indexed; CPUS >0;
 # extra Platypus options do not contain options used within the pipeline
 if [ ! -s $REFERENCE ]; then
-    echo -e "ERROR: Reference FASTA file not found or empty. Please check the path.\n" >&2
+    echo -e "\nERROR: Reference FASTA file not found or empty. Please check the path.\n" >&2
     exit 1
 fi
 
 if [ ! -s ${REFERENCE}.fai ]; then
-    echo -e "ERROR: Reference FASTA file has no accompanying .fai index file. Please index the FASTA file using 'samtools faidx' or equivalent.\n" >&2
+    echo -e "\nERROR: Reference FASTA file has no accompanying .fai index file. Please index the FASTA file using 'samtools faidx' or equivalent.\n" >&2
     exit 1
 fi
 
 if  [ "$REGIONS" != "no" ] && [ ! -s $REGIONS ]; then
-    echo -e "ERROR: Regions file not found or empty. Please check the path.\n" >&2
+    echo -e "\nERROR: Regions file not found or empty. Please check the path.\n" >&2
     exit 1
 fi
 
 if ! [[ $CPUS =~ ^[1-9]+[0-9]*$ ]]; then
-    echo -e "ERROR: Number of CPUs must be greater than 0\n" >&2
+    echo -e "\nERROR: Number of CPUs must be greater than 0\n" >&2
     exit 1
 fi
 
 if echo "$EXTRA" | grep -q -E "\-\-logFileName|\-\-refFile|\-\-bamFiles|\-\-regions|\-\-minPosterior|\-\-minReads|\-\-minFlank|\-\-trimReadFlank|\-\-source|\-\-getVariantsFromBAMs|\-\-nCPU|\-\-output=|\-o " ; then 
-    echo -e "ERROR: Additional Platypus options cannot include --logFileName, --refFile, --bamFiles, --regions, --minPosterior, --minReads, --minFlank, --trimReadFlank, --source, --getVariantsFromBAMs, --nCPU, --output, or -o.\n" >&2
+    echo -e "\nERROR: Additional Platypus options cannot include --logFileName, --refFile, --bamFiles, --regions, --minPosterior, --minReads, --minFlank, --trimReadFlank, --source, --getVariantsFromBAMs, --nCPU, --output, or -o.\n" >&2
     exit 1
 fi
 
 if [ ! -d $BAMSDIR ]; then
-    echo -e "ERROR: $BAMSDIR directory not found. Please check the path.\n" >&2
+    echo -e "\nERROR: $BAMSDIR directory not found. Please check the path.\n" >&2
     exit 1
 fi
 
 FILES=`ls -1 $BAMSDIR/*.bam 2> /dev/null | wc -l`
 if [ "$FILES" -eq 0 ]; then
-    echo -e "ERROR: $BAMSDIR contains no files with .bam extension. Please check the path.\n" >&2
+    echo -e "\nERROR: $BAMSDIR contains no files with .bam extension. Please check the path.\n" >&2
     exit 1
 fi
 
 for FILE in `ls $BAMSDIR/*.bam`; do
     if [ ! -s ${FILE}.bai ]; then
-        echo -e "ERROR: The file $FILE has no accompanying .bai index file. Please index the file using 'samtools sort' and 'samtools index' or equivalent.\n" >&2
+        echo -e "\nERROR: The file $FILE has no accompanying .bai index file. Please index the file using 'samtools sort' and 'samtools index' or equivalent.\n" >&2
         exit 1
     fi
 done
@@ -562,7 +562,11 @@ echo "Input reference genome: $REFERENCE"
 echo "Input regions file:     $REGIONS"
 echo "Output directory:       $OUTDIR"
 echo "Number of CPUs to use:  $CPUS"
-echo "Extra Platypus options: $EXTRA"
+if [ -z "$EXTRA" ]; then
+    echo "Extra Platypus options: no"
+else
+    echo "Extra Platypus options: $EXTRA"
+fi
 
 
 # Check if there is a checkpoint file from a previous run in the output folder

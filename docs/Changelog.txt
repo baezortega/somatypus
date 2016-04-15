@@ -1,0 +1,20 @@
+# Change Log
+
+## [1.1] - 2016-04-15
+
+### Added
+- Command-line option -p for specifying additional Platypus arguments.
+- Subsequent Somatypus executions with the same output folder (to resume execution) 
+  generate different global log files, labeled with date and time.
+- Individual variant calling generates a separate log file for each sample.
+
+### Changed
+- Temporary folders and log files naming convention, so that the numbers in
+  the folder/file names match those of the step(s) involved.
+- Detailed installation steps in INSTALL.txt.
+- Command-line usage information.
+- Other minor changes to the somatypus script.
+- Documentation updated.
+
+### Removed
+- Installation script (more dangerous than useful).
