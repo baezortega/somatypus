@@ -1,3 +1,8 @@
+#### Download the latest release: [Somatypus 1.1](archive/v1.1.zip).
+
+---
+
+
 Somatypus
 =========
 
@@ -33,7 +38,7 @@ Somatypus has been tested on Ubuntu (14.04.4) systems, and it should behave well
 * Allow a highly customised execution — unless the source code is altered.
 
 
-#### Read the full documentation in [docs/Somatypus Documentation.pdf] (https://github.com/adrianbaezortega/somatypus/raw/master/docs/Somatypus%20Documentation.pdf).
+#### Read the full documentation in [docs/Somatypus Documentation.pdf](docs/Somatypus%20Documentation.pdf).
 
 
 ---
