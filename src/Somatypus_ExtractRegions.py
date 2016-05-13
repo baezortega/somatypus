@@ -100,7 +100,7 @@ with open(allele2VCF, 'r') as vcf:
             else:
                 allele2[chr] = [pos]
 
-print 'Reading file:', allele3VCF, '\n'
+print 'Reading file:', allele3VCF
 with open(allele3VCF, 'r') as vcf:
     for line in vcf:
         if not line.startswith('#'):
@@ -114,7 +114,7 @@ with open(allele3VCF, 'r') as vcf:
                 
 # Indels are read only if indel-excluded SNPs are not input
 if int(excluded) == 0:
-    print '\nReading file:', indelsVCF
+    print 'Reading file:', indelsVCF, '\n'
     with open(indelsVCF, 'r') as vcf:
         for line in vcf:
             if not line.startswith('#'):
@@ -184,4 +184,4 @@ if int(excluded) == 0:
     print countInd, 'regions output to file', outFileInd
 else:
     print 'Indels not considered'
-print 'Done!\n'
+print '\nDone!\n'
