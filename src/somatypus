@@ -268,17 +268,17 @@ genotyping() {
 
         # Create a new regions file containing only the bases of the missing variants
         # The size of the region is the length of the SNP/indel
-        awk '{if (length($3) >= length($4)) { print $1 ":" $2 "-" $2+length($3)-1 } else { print $1 ":" $2 "-" $2+length($4)-1 }}' $OUTDIR/coords.txt > $OUTDIR/8-18_genotyped/SNPregions_indels.txt
+        awk '{if (length($3) >= length($4)) { print $1 ":" $2 "-" $2+length($3)-1 } else { print $1 ":" $2 "-" $2+length($4)-1 }}' $OUTDIR/coords.txt > $OUTDIR/8-18_genotyped/varRegions_indels.txt
         rm $OUTDIR/geno_pos.txt $OUTDIR/merged_pos.txt $OUTDIR/coords.txt
 
         # If there are missing calls: run Platypus to re-genotype them
-        if [ -s $OUTDIR/8-18_genotyped/SNPregions_indels.txt ]; then
+        if [ -s $OUTDIR/8-18_genotyped/varRegions_indels.txt ]; then
             echo -e "\nGenotyping missing calls in indels\n"
             Platypus.py callVariants \
-            --logFileName=$OUTDIR/logs/12.2_genotype_snpRegions_indels.log \
+            --logFileName=$OUTDIR/logs/12.2_genotype_varRegions_indels.log \
             --refFile=$REFERENCE \
             --bamFiles=$OUTDIR/8-18_genotyped/bam_list.txt \
-            --regions=$OUTDIR/8-18_genotyped/SNPregions_indels.txt \
+            --regions=$OUTDIR/8-18_genotyped/varRegions_indels.txt \
             --minPosterior=0 \
             --nCPU=$CPUS \
             --minReads=3 \
@@ -321,17 +321,17 @@ genotyping() {
 
         # Create a new regions file containing only the bases of the missing variants
         # The size of the region is the length of the SNP/indel
-        awk '{if (length($3) >= length($4)) { print $1 ":" $2 "-" $2+length($3)-1 } else { print $1 ":" $2 "-" $2+length($4)-1 }}' $OUTDIR/coords.txt > $OUTDIR/8-18_genotyped/SNPregions_allele${IND}.txt
+        awk '{if (length($3) >= length($4)) { print $1 ":" $2 "-" $2+length($3)-1 } else { print $1 ":" $2 "-" $2+length($4)-1 }}' $OUTDIR/coords.txt > $OUTDIR/8-18_genotyped/varRegions_allele${IND}.txt
         rm $OUTDIR/geno_pos.txt $OUTDIR/merged_pos.txt $OUTDIR/coords.txt
 
         # If there are missing calls: run Platypus to re-genotype them
-        if [ -s $OUTDIR/8-18_genotyped/SNPregions_allele${IND}.txt ]; then
+        if [ -s $OUTDIR/8-18_genotyped/varRegions_allele${IND}.txt ]; then
             echo -e "\nGenotyping missing calls in allele $IND\n"
             Platypus.py callVariants \
-            --logFileName=$OUTDIR/logs/$(( 8 + $IND )).2_genotype_snpRegions_allele${IND}.log \
+            --logFileName=$OUTDIR/logs/$(( 8 + $IND )).2_genotype_varRegions_allele${IND}.log \
             --refFile=$REFERENCE \
             --bamFiles=$OUTDIR/8-18_genotyped/bam_list.txt \
-            --regions=$OUTDIR/8-18_genotyped/SNPregions_allele${IND}.txt \
+            --regions=$OUTDIR/8-18_genotyped/varRegions_allele${IND}.txt \
             --minPosterior=0 \
             --nCPU=$CPUS \
             --minReads=3 \
@@ -404,17 +404,17 @@ genotyping_indelflagged() {
 
     # Create a new regions file containing only the bases of the missing variants
     # The size of the region is the length of the SNP/indel
-    awk '{if (length($3) >= length($4)) { print $1 ":" $2 "-" $2+length($3)-1 } else { print $1 ":" $2 "-" $2+length($4)-1 }}' $OUTDIR/coords.txt > $OUTDIR/8-18_genotyped/SNPregions_allele${IND}_indelExcluded.txt
+    awk '{if (length($3) >= length($4)) { print $1 ":" $2 "-" $2+length($3)-1 } else { print $1 ":" $2 "-" $2+length($4)-1 }}' $OUTDIR/coords.txt > $OUTDIR/8-18_genotyped/varRegions_allele${IND}_indelExcluded.txt
     rm $OUTDIR/geno_pos.txt $OUTDIR/merged_pos.txt $OUTDIR/coords.txt
 
     # If there are missing calls: run Platypus to re-genotype them
-    if [ -s $OUTDIR/8-18_genotyped/SNPregions_allele${IND}_indelExcluded.txt ]; then
+    if [ -s $OUTDIR/8-18_genotyped/varRegions_allele${IND}_indelExcluded.txt ]; then
         echo -e "\nGenotyping missing calls in allele $IND\n"
         Platypus.py callVariants \
-        --logFileName=$OUTDIR/logs/$(( 13 + $IND )).2_genotype_snpRegions_allele${IND}_indelExcluded.log \
+        --logFileName=$OUTDIR/logs/$(( 13 + $IND )).2_genotype_varRegions_allele${IND}_indelExcluded.log \
         --refFile=$REFERENCE \
         --bamFiles=$OUTDIR/8-18_genotyped/bam_list.txt \
-        --regions=$OUTDIR/8-18_genotyped/SNPregions_allele${IND}_indelExcluded.txt \
+        --regions=$OUTDIR/8-18_genotyped/varRegions_allele${IND}_indelExcluded.txt \
         --minPosterior=0 \
         --nCPU=$CPUS \
         --minReads=3 \
