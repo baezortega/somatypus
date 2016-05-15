@@ -473,7 +473,7 @@ merge_filter_all() {
     Somatypus_VafFilter.py $OUTDIR/8-18_genotyped/GenotypedSNPs_merged.filtered.vcf $OUTDIR/8-18_genotyped/GenotypedIndels_merged.filtered.vcf > $OUTDIR/logs/18_VAF_filter.log
 
     # Sort VCFs
-    vcf-sort -c $OUTDIR/8-18_genotyped/GenotypedSNPs_merged.filtered.VAFfilt.vcf > $OUTDIR/Somatypus_SNPs_final.vcf 2> /dev/null
+    vcf-sort -c $OUTDIR/8-18_genotyped/GenotypedSNPs_merged.filtered.VAFfilt.vcf > $OUTDIR/Somatypus_SNVs_final.vcf 2> /dev/null
     vcf-sort -c $OUTDIR/8-18_genotyped/GenotypedIndels_merged.filtered.VAFfilt.vcf > $OUTDIR/Somatypus_Indels_final.vcf 2> /dev/null
         
 }
@@ -893,7 +893,7 @@ if [ "$STEP" -lt 18 ]; then
     merge_filter_all
     
     # Check successful execution
-    check_file $OUTDIR/Somatypus_SNPs_final.vcf
+    check_file $OUTDIR/Somatypus_SNVs_final.vcf
     check_file $OUTDIR/Somatypus_Indels_final.vcf
     
     # Update checkpoint file
@@ -906,5 +906,5 @@ fi
 echo -e "\nExecution finished on `date`"
 
 echo -e "\nALL DONE!"
-echo -e "Output is in: $OUTDIR/Somatypus_SNPs_final.vcf\n              $OUTDIR/Somatypus_Indels_final.vcf\n"
+echo -e "Output is in: $OUTDIR/Somatypus_SNVs_final.vcf\n              $OUTDIR/Somatypus_Indels_final.vcf\n"
 
