@@ -1,5 +1,26 @@
 # Change Log
 
+## [1.2] - 2016-05-14
+
+### Added
+- Somatypus_MergeIndelRegions.py script, which merges overlapping regions from the 
+  regions file used for re-genotyping indels that are missing after genotyping.
+
+### Changed
+- Indels are now genotyped separately in an additional pipeline step (#12). This
+  solves a problem that caused a small proportion of variant calls to be duplicated.
+- Indices of steps after #11 have been updated after the inclusion of indel 
+  genotyping.
+- Intermediate region files called 'SNPregions_...' renamed to 'varRegions_...'.
+- Somatypus_VafFilter.py script no longer performs filtering of indels according to 
+  quality flags, or separation of SNPs and indels.
+- Somatypus_ExtractExons.py script renamed to Somatypus_ExtractRegions.py.
+- Somatypus_SNPs_final.vcf output file renamed to Somatypus_SNVs_final.vcf.
+- Output files are now sorted by chromosome in natural order: 
+  1,2,...,10,11,...,20,21,...,X instead of 1,10,11,...,2,20,21,...,X
+- Documentation updated.
+
+
 ## [1.1] - 2016-04-15
 
 ### Added
