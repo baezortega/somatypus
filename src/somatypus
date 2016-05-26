@@ -782,8 +782,8 @@ if [ "$STEP" -lt 8 ]; then
     check_file $OUTDIR/5-7_merged/MergedIndels.sorted.vcf.gz.tbi
     if [ "$REGIONS" != "no" ]; then
         check_file $OUTDIR/8-18_genotyped/regions_allele1.txt
+        check_file $OUTDIR/8-18_genotyped/regions_indels.txt
     fi
-    check_file $OUTDIR/8-18_genotyped/regions_indels.txt
     check_file $OUTDIR/8-18_genotyped/bam_list.txt
     
     # Update checkpoint file

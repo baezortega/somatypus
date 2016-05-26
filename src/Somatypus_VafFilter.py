@@ -32,7 +32,7 @@ MAXVAF = 0.9
 
 if len(sys.argv) != 3:
     print '\nSomatypus_VafFilter.py: Discards variants with a VAF >0.9 in all samples from two Platypus output VCF files'
-    print '                        (one for SNPs and one for indels).
+    print '                        (one for SNPs and one for indels).'
     print '                        *All calls in the VCF must be biallelic (no commas in the ALT column).*'
     print '                 Input: Path to VCF files.'
     print '                 Usage: Somatypus_VafFilter.py /path/to/snps.vcf /path/to/indels.vcf\n'
