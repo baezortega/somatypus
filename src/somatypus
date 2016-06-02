@@ -273,7 +273,7 @@ genotyping() {
         rm $OUTDIR/geno_pos.txt $OUTDIR/merged_pos.txt $OUTDIR/coords.txt
 
         # If there are missing calls: run Platypus to re-genotype them
-        if [ -s $OUTDIR/8-18_genotyped/varRegions_indels.txt ]; then
+        if [ -s $OUTDIR/8-18_genotyped/varRegions_indels_merged.txt ]; then
             echo -e "\nGenotyping missing calls in indels\n"
             Platypus.py callVariants \
             --logFileName=$OUTDIR/logs/12.3_genotype_second_indels.log \
