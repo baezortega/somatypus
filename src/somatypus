@@ -467,7 +467,8 @@ merge_filter_all() {
     awk '!(($7 ~ /badReads/) || ($7 ~ /MQ/) || ($7 ~ /strandBias/) || ($7 ~ /SC/) || ($7 ~ /QD/))' $OUTDIR/8-18_genotyped/GenotypedSNPs_merged.vcf > $OUTDIR/8-18_genotyped/GenotypedSNPs_merged.filtered.vcf
 
     # Filter indel calls with flags other than PASS
-    awk '$7 == "PASS"' $OUTDIR/8-18_genotyped/GenotypedIndels_merged.vcf > $OUTDIR/8-18_genotyped/GenotypedIndels_merged.filtered.vcf
+    head -48 $OUTDIR/8-18_genotyped/GenotypedIndels_merged.vcf > $OUTDIR/8-18_genotyped/GenotypedIndels_merged.filtered.vcf
+    awk '$7 == "PASS"' $OUTDIR/8-18_genotyped/GenotypedIndels_merged.vcf >> $OUTDIR/8-18_genotyped/GenotypedIndels_merged.filtered.vcf
 
     # Filter variants with a VAF >0.9 in all samples
     Somatypus_VafFilter.py $OUTDIR/8-18_genotyped/GenotypedSNPs_merged.filtered.vcf $OUTDIR/8-18_genotyped/GenotypedIndels_merged.filtered.vcf > $OUTDIR/logs/18_VAF_filter.log
@@ -634,7 +635,7 @@ if [ -s $OUTDIR/logs/CHECKPOINT ]; then
     STEP=`echo $CHK | cut -f1 -d" "`
     STEPNAME=`echo $CHK | cut -f2 -d" "`
     echo -e "\n*CHECKPOINT FILE FOUND*"
-    echo -e "Resuming execution after last complete step: $STEPNAME"
+    echo -e "Resuming execution after last completed step: $STEPNAME"
 fi
 
 
