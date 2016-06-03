@@ -5,7 +5,7 @@
 # 09/02/2016
 
 # ExtractVcfData.py
-# Identifies SNPs close to indels in multiple Platypus output VCF files
+# Extracts metadata, NR and NV values from a Platypus VCF into three text files
 
 # INPUT
 # vcfFile: path to input VCF file
