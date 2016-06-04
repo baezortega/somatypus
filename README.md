@@ -1,4 +1,4 @@
-#### Download the latest release: [Somatypus 1.1](../../archive/v1.1.zip).
+#### Download the latest release: [Somatypus 1.2](../../archive/v1.2.zip).
 
 ---
 
