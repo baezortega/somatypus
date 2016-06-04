@@ -248,7 +248,7 @@ genotyping() {
 
         # Run Platypus to genotype indels
         Platypus.py callVariants \
-        --logFileName=$OUTDIR/logs/12.1_genotype_indels.log \
+        --logFileName=$OUTDIR/logs/12.1_genotype_indels_first.log \
         --refFile=$REFERENCE \
         --bamFiles=$OUTDIR/8-18_genotyped/bam_list.txt \
         $REGIONSARG \
@@ -269,14 +269,14 @@ genotyping() {
         # Create a new regions file containing only the bases of the missing variants
         # The size of the region is the length of the SNV/indel
         awk '{if (length($3) >= length($4)) { print $1 ":" $2 "-" $2+length($3)-1 } else { print $1 ":" $2 "-" $2+length($4)-1 }}' $OUTDIR/coords.txt > $OUTDIR/8-18_genotyped/varRegions_indels.txt
-        Somatypus_MergeIndelRegions.py $OUTDIR/8-18_genotyped/varRegions_indels.txt > $OUTDIR/logs/12.3_merge_indel_regions.log
+        Somatypus_MergeIndelRegions.py $OUTDIR/8-18_genotyped/varRegions_indels.txt > $OUTDIR/logs/12.2_merge_indel_regions.log
         rm $OUTDIR/geno_pos.txt $OUTDIR/merged_pos.txt $OUTDIR/coords.txt
 
         # If there are missing calls: run Platypus to re-genotype them
         if [ -s $OUTDIR/8-18_genotyped/varRegions_indels_merged.txt ]; then
             echo -e "\nGenotyping missing calls in indels\n"
             Platypus.py callVariants \
-            --logFileName=$OUTDIR/logs/12.3_genotype_second_indels.log \
+            --logFileName=$OUTDIR/logs/12.3_genotype_indels_second.log \
             --refFile=$REFERENCE \
             --bamFiles=$OUTDIR/8-18_genotyped/bam_list.txt \
             --regions=$OUTDIR/8-18_genotyped/varRegions_indels_merged.txt \
@@ -302,7 +302,7 @@ genotyping() {
 
         # Run Platypus to genotype the specified allele
         Platypus.py callVariants \
-        --logFileName=$OUTDIR/logs/$(( 8 + $IND )).1_genotype_first_allele${IND}.log \
+        --logFileName=$OUTDIR/logs/$(( 8 + $IND )).1_genotype_allele${IND}_first.log \
         --refFile=$REFERENCE \
         --bamFiles=$OUTDIR/8-18_genotyped/bam_list.txt \
         $REGIONSARG \
@@ -329,7 +329,7 @@ genotyping() {
         if [ -s $OUTDIR/8-18_genotyped/varRegions_allele${IND}.txt ]; then
             echo -e "\nGenotyping missing calls in allele $IND\n"
             Platypus.py callVariants \
-            --logFileName=$OUTDIR/logs/$(( 8 + $IND )).2_genotype_second_allele${IND}.log \
+            --logFileName=$OUTDIR/logs/$(( 8 + $IND )).2_genotype_allele${IND}_second.log \
             --refFile=$REFERENCE \
             --bamFiles=$OUTDIR/8-18_genotyped/bam_list.txt \
             --regions=$OUTDIR/8-18_genotyped/varRegions_allele${IND}.txt \
@@ -385,7 +385,7 @@ genotyping_indelflagged() {
 
     # Run Platypus to genotype the specified allele
     Platypus.py callVariants \
-    --logFileName=$OUTDIR/logs/$(( 13 + $IND )).1_genotype_first_allele${IND}_indelExcluded.log \
+    --logFileName=$OUTDIR/logs/$(( 13 + $IND )).1_genotype_indelExcluded_allele${IND}_first.log \
     --refFile=$REFERENCE \
     $REGIONSARG \
     --bamFiles=$OUTDIR/8-18_genotyped/bam_list.txt \
@@ -412,7 +412,7 @@ genotyping_indelflagged() {
     if [ -s $OUTDIR/8-18_genotyped/varRegions_allele${IND}_indelExcluded.txt ]; then
         echo -e "\nGenotyping missing calls in allele $IND\n"
         Platypus.py callVariants \
-        --logFileName=$OUTDIR/logs/$(( 13 + $IND )).2_genotype_second_allele${IND}_indelExcluded.log \
+        --logFileName=$OUTDIR/logs/$(( 13 + $IND )).2_genotype_indelExcluded_allele${IND}_second.log \
         --refFile=$REFERENCE \
         --bamFiles=$OUTDIR/8-18_genotyped/bam_list.txt \
         --regions=$OUTDIR/8-18_genotyped/varRegions_allele${IND}_indelExcluded.txt \
