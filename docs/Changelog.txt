@@ -16,6 +16,7 @@
   quality flags, or separation of SNPs and indels.
 - Somatypus_ExtractExons.py script renamed to Somatypus_ExtractRegions.py.
 - Somatypus_SNPs_final.vcf output file renamed to Somatypus_SNVs_final.vcf.
+- Slightly different naming of genotyping log files.
 - Output files are now sorted by chromosome in natural order: 
   1,2,...,10,11,...,20,21,...,X instead of 1,10,11,...,2,20,21,...,X
 - Documentation updated.
