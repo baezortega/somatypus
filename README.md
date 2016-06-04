@@ -17,7 +17,7 @@ Somatypus has been tested on Ubuntu (14.04.4) systems, and it should behave well
 
 ##### Somatypus does...
 
-* Call single nucleotide polymorphisms (SNPs) and short insertions/deletions (indels) from any number of sequence alignment files (subject to memory requirements), at a probably unmatched speed.
+* Call single nucleotide variants (SNVs) and short insertions/deletions (indels) from any number of sequence alignment files (subject to memory constraints), at a probably unmatched speed.
 
 * Filter low-quality or ambiguous variants, while preserving those variants occurring with low frequency (in very few samples) and aberrant copy number (not fitting a diploid model).
 
@@ -31,9 +31,9 @@ Somatypus has been tested on Ubuntu (14.04.4) systems, and it should behave well
 
 * Call long indels or structural variants.
 
-* Manage samples in pairs, or differentiate between ‘tumour’ and ‘host/normal’ samples, or between germ-line and somatic variants. Identification of somatic variants must be performed downstream.
+* Manage samples in pairs, or distinguish between ‘tumour’ and ‘host/normal’ samples, or between germ-line and somatic variants. Identification of somatic variants must be performed downstream.
 
-* Take into account contamination between samples. Identification of variants caused by sample contamination must be performed downstream.
+* Take into account contamination between samples. Identification of variants caused by cross-sample contamination must be performed downstream.
 
 * Allow a highly customised execution — unless the source code is altered.
 
