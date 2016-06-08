@@ -119,7 +119,7 @@ with open(indFile, 'r') as inInd, open(outFileInd, 'w') as outInd:
                     outInd.write(line)
                     break
              
-print '\n' + str(countInd1 - countInd2) + ' high-VAF indels discarded'
+print str(countInd1 - countInd2) + ' high-VAF indels discarded'
 
 
 print 'Done!\n'
