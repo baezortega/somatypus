@@ -5,7 +5,7 @@
 # 22/01/2016
 
 # Somatypus_IndelFlag.py
-# Identifies SNPs close to indels in multiple Platypus output VCF files
+# Identifies SNVs close to indels in multiple Platypus output VCF files
 # Called by indel_flag()
 
 # INPUT
@@ -14,7 +14,7 @@
 
 
 """
-This script is used to extract the coordinates and variant bases of SNPs which are too close 
+This script is used to extract the coordinates and variant bases of SNVs which are too close 
 to an indel in any sample, from multiple Platypus VCFs, and write them into an output file.
 """
 
@@ -27,10 +27,10 @@ from sets import Set
 
 # If not 2 arguments: print help
 if len(sys.argv) != 3:
-    print '\nSomatypus_IndelFlag.py: Identifies SNPs close to indels in multiple Platypus output VCF files.'
+    print '\nSomatypus_IndelFlag.py: Identifies SNVs close to indels in multiple Platypus output VCF files.'
     print '                        *The VCFs need to be split first with the splitMAandMNPs.py script.*'
     print '                        For each VCF, it extracts the coordinates of the bases up to 5bp'
-    print '                        upstream and downstream any indel; then, it detects SNPs inside'
+    print '                        upstream and downstream any indel; then, it detects SNVs inside'
     print '                        these regions in the same sample and outputs them into a text file.'
     print '                 Input: A text file with paths to VCF files, one per line.'
     print '                        Path to output file.'
@@ -43,10 +43,10 @@ WINDOW = 5
 
 
 script, inputFile, outFile = sys.argv
-flaggedSNPs = Set([])
+flaggedSNVs = Set([])
 
 
-# Extract SNPs near indels from each sample
+# Extract SNVs near indels from each sample
 with open(inputFile, 'r') as vcfList:
     for listLine in vcfList:
         vcfFile = listLine.strip()
@@ -75,7 +75,7 @@ with open(inputFile, 'r') as vcfList:
                         for position in range(int(pos) - WINDOW, int(pos) + ftprint + WINDOW + 1):
                             indelPos.add(chrom + ':' + str(position))
 
-        # Second: extract SNPs overlapping indels
+        # Second: extract SNVs overlapping indels
         with open(vcfFile, 'r') as vcf:
             for line in vcf:
                 if not line.startswith('#'):
@@ -85,23 +85,23 @@ with open(inputFile, 'r') as vcfList:
                     ref = col[3]
                     alt = col[4]
 
-                    # For each SNP: check if it's near an indel
+                    # For each SNV: check if it's near an indel
                     if len(ref) == len(alt):
                         location = chrom + ':' + pos
                         if len(ref) != 1:
                             print '\nERROR: MNP found at ' + location + '. Use splitMAandMNPs.py first.\n'
                             sys.exit(1) 
-                        # If near an indel: add to flaggedSNPs set
+                        # If near an indel: add to flaggedSNVs set
                         if location in indelPos:
                             id = chrom + ':' + pos + ',' + ref + '>' + alt
-                            flaggedSNPs.add(id)
+                            flaggedSNVs.add(id)
 
 
-# Write flagged SNPs from all files to output file
-print 'Writing indel-flagged SNPs to ' + outFile
+# Write flagged SNVs from all files to output file
+print 'Writing indel-flagged SNVs to ' + outFile
 with open(outFile, 'w') as out:
-    for snp in sorted(flaggedSNPs):
-        out.write(snp + '\n')
+    for snv in sorted(flaggedSNVs):
+        out.write(snv + '\n')
 
 
 print 'Done!\n'

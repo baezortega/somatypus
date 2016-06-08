@@ -134,7 +134,7 @@ split_calls() {
 
     # For each individual VCF, split calls
     for FILE in `ls $OUTDIR/1-2_individual_calls/platypusVariants_*`; do
-        Somatypus_SplitMA-MNPs.py $FILE >> $OUTDIR/logs/3_split.log
+        Somatypus_SplitMA-MNVs.py $FILE >> $OUTDIR/logs/3_split.log
         mv "${FILE%.*}".split.vcf $OUTDIR/3_individual_split/
     done
 
@@ -142,7 +142,7 @@ split_calls() {
 
 
 # 4) filter_calls()
-# Filters Platypus SNP calls showing flags badReads, MQ, strandBias, SC or QD  
+# Filters Platypus SNV calls showing flags badReads, MQ, strandBias, SC or QD  
 filter_calls() {
 
     # Create directory for output filtered VCFs
@@ -175,14 +175,14 @@ indel_flag() {
 
 
 # 6) merge_calls()
-# Merges filtered Platypus SNP calls obtained from individual calling
+# Merges filtered Platypus SNV calls obtained from individual calling
 merge_calls() {
 
     # Create a list of filtered individual VCFs
     ls -1 $OUTDIR/4_individual_filtered/*.filtered.vcf > $OUTDIR/4_individual_filtered/list.txt
 
     # Merge SNVs from all filtered VCFs
-    Somatypus_SnpMerge.py $OUTDIR/4_individual_filtered/list.txt $OUTDIR/5-7_merged/indel_flagged_SNVs.txt $OUTDIR/5-7_merged > $OUTDIR/logs/6_SNP_merge.log
+    Somatypus_SNVmerge.py $OUTDIR/4_individual_filtered/list.txt $OUTDIR/5-7_merged/indel_flagged_SNVs.txt $OUTDIR/5-7_merged > $OUTDIR/logs/6_SNV_merge.log
 
 }
 
@@ -202,7 +202,7 @@ extract_indels() {
 
 
 # 8) prepare_genotyping()
-# Generates adequate VCF and region files for SNP and indel genotyping
+# Generates adequate VCF and region files for SNV and indel genotyping
 prepare_genotyping() {
 
     # Sort, compress and index VCF files for inputting them to Platypus
@@ -291,7 +291,7 @@ genotyping() {
             echo -e "\nNo missing calls"
         fi
         
-    # SNP genotyping (allele $IND) 
+    # SNV genotyping (allele $IND) 
     else
 
         # If the user input a regions file: include the --regions argument
@@ -472,7 +472,7 @@ merge_filter_all() {
     awk '$7 == "PASS"' $OUTDIR/8-18_genotyped/GenotypedIndels_merged.vcf >> $OUTDIR/8-18_genotyped/GenotypedIndels_merged.filtered.vcf
 
     # Filter variants with a VAF >0.9 in all samples
-    Somatypus_VafFilter.py $OUTDIR/8-18_genotyped/GenotypedSNVs_merged.filtered.vcf $OUTDIR/8-18_genotyped/GenotypedIndels_merged.filtered.vcf > $OUTDIR/logs/18_VAF_filter.log
+    Somatypus_VAFfilter.py $OUTDIR/8-18_genotyped/GenotypedSNVs_merged.filtered.vcf $OUTDIR/8-18_genotyped/GenotypedIndels_merged.filtered.vcf > $OUTDIR/logs/18_VAF_filter.log
 
     # Sort VCFs
     vcf-sort -c $OUTDIR/8-18_genotyped/GenotypedSNVs_merged.filtered.VAFfilt.vcf > $OUTDIR/Somatypus_SNVs_final.vcf 2> /dev/null
@@ -607,7 +607,7 @@ hash Platypus.py 2>/dev/null || { echo -e "\nERROR: Platypus.py: command not fou
 hash tabix 2>/dev/null || { echo -e "\nERROR: tabix: command not found. Please install the SAMtools tabix package and add its directory to your PATH.\n" >&2; exit 1; }    
 hash bgzip 2>/dev/null || { echo -e "\nERROR: bgzip: command not found. Please install the SAMtools tabix package and add its directory to your PATH.\n" >&2; exit 1; }    
 hash vcf-sort 2>/dev/null || { echo -e "\nERROR: vcf-sort: command not found. Please install VCFtools and add its directory to your PATH.\n" >&2; exit 1; }    
-hash Somatypus_SplitMA-MNPs.py 2>/dev/null || { echo -e "\nERROR: Somatypus directory not included in the PATH. Please add the somatypus/bin directory to your PATH.\n" >&2; exit 1; }    
+hash Somatypus_SplitMA-MNVs.py 2>/dev/null || { echo -e "\nERROR: Somatypus directory not included in the PATH. Please add the somatypus/bin directory to your PATH.\n" >&2; exit 1; }    
 
 
 # START RUNNING

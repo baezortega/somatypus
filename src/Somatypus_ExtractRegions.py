@@ -10,12 +10,12 @@
 
 # INPUT
 # exomeFile: file with the original regions in CHR:START-END format, one per line
-# allele1VCF: path to VCF with bi-allelic variants / 1st allele of multi-allelic SNPs
-# allele2VCF: path to VCF with 2nd allele of multi-allelic SNPs
-# allele3VCF: path to VCF with 3rd allele of multi-allelic SNPs
+# allele1VCF: path to VCF with bi-allelic variants / 1st allele of multi-allelic SNVs
+# allele2VCF: path to VCF with 2nd allele of multi-allelic SNVs
+# allele3VCF: path to VCF with 3rd allele of multi-allelic SNVs
 # indelsVCF: path to VCF with indels (or "none", if excluded == 1)
 # outDir: path to (existing) output folder
-# excluded: logical value indicating if the variants are indel-excluded SNPs (1) or not (0)
+# excluded: logical value indicating if the variants are indel-excluded SNVs (1) or not (0)
 
 
 """
@@ -34,14 +34,14 @@ import re
 # If not 7 arguments: print help
 if len(sys.argv) != 8:
     print '\nSomatypus_ExtractRegions.py: Extracts regions from a regions file, if they contain variants from the VCFs.'
-    print '                             The 4 VCF files correspond to: bi-allelic SNPs / 1st allele of'
-    print '                             multi-allelic SNPs; 2nd allele of multi-allelic SNPs; 3rd allele of'
-    print '                             multi-allelic SNPs; indels (not needed if using indel-excluded SNPs).'
+    print '                             The 4 VCF files correspond to: bi-allelic SNVs / 1st allele of'
+    print '                             multi-allelic SNVs; 2nd allele of multi-allelic SNVs; 3rd allele of'
+    print '                             multi-allelic SNVs; indels (not needed if using indel-excluded SNVs).'
     print '                             The regions are output to 4 different files, one for each input VCF.'
     print '                      Input: A file with the original regions in CHR:START-END format, one per line.'
     print '                             Four VCF files.'
     print '                             Path to (existing) output folder.'
-    print '                             Logical value indicating if the variants are indel-excluded SNPs (1; indels will not be used) or not (0).'
+    print '                             Logical value indicating if the variants are indel-excluded SNVs (1; indels will not be used) or not (0).'
     print '                      Usage: Somatypus_ExtractRegions.py /path/to/regions.txt /path/to/var1.vcf /path/to/var2.vcf /path/to/var3.vcf </path/to/var4.vcf|"none"> /path/to/outDir <0/1>\n'
     sys.exit(0)
 
@@ -112,7 +112,7 @@ with open(allele3VCF, 'r') as vcf:
             else:
                 allele3[chrom] = [pos]
                 
-# Indels are read only if indel-excluded SNPs are not input
+# Indels are read only if indel-excluded SNVs are not input
 if int(excluded) == 0:
     print 'Reading file:', indelsVCF, '\n'
     with open(indelsVCF, 'r') as vcf:
@@ -165,7 +165,7 @@ with open(exomeFile, 'r') as exome, \
                     print ' Found in Allele 3 VCF'
                     break
         
-        # If not indel-excluded SNPs: search indels dict
+        # If not indel-excluded SNVs: search indels dict
         if int(excluded) == 0:
             if chrom in indels:
                 for pos in indels[chrom]:

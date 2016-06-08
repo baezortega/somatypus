@@ -5,7 +5,7 @@
 # 22/01/2016
 
 # Somatypus_SplitMA-MNPs.py
-# Splits VCF records describing MNPs and multiallelic SNPs/indels into individual records
+# Splits VCF records describing MNPs and multiallelic SNVs/indels into individual records
 # Called by split_calls() and merge_filter_all()
 
 # INPUT
@@ -24,9 +24,9 @@ import re
 
 
 if len(sys.argv) != 2:
-    print '\nSomatypus_SplitMA-MNPs.py: Splits VCF records describing MNPs and multiallelic SNPs/indels into individual records.'
+    print '\nSomatypus_SplitMA-MNVs.py: Splits VCF records describing MNPs and multiallelic SNVs/indels into individual records.'
     print '                    Input: Path to VCF file.'
-    print '                    Usage: Somatypus_SplitMA-MNPs.py /path/to/variants.vcf\n'
+    print '                    Usage: Somatypus_SplitMA-MNVs.py /path/to/variants.vcf\n'
     sys.exit(0)
 
 
@@ -102,7 +102,7 @@ with open(vcfFile, 'r') as vcf:
 print count, 'multi-allelic variants found'
 
 
-# Secondly, split MNPs into SNPs
+# Secondly, split MNPs into SNVs
 print 'Splitting MNPs...'
 with open(tmpFile, 'r') as vcf:
     with open(outFile, 'w') as out:
@@ -123,7 +123,7 @@ with open(tmpFile, 'r') as vcf:
                 format = col[8]       
                 theRest = '\t'.join(col[9:])
 
-                # Check that the record is not a SNP or an indel
+                # Check that the record is not a SNV or an indel
                 if len(ref) != len(alt) or len(ref) == 1:
                     out.write(line)
                 else:

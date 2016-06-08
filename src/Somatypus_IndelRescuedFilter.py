@@ -5,7 +5,7 @@
 # 22/01/2016
 
 # Somatypus_IndelRescuedFilter.py
-# Discards rescued indel-flagged SNPs with median read coverage <20, median VAF <0.2 or median VAF >0.9
+# Discards rescued indel-flagged SNVs with median read coverage <20, median VAF <0.2 or median VAF >0.9
 # Called by merge_filter_indelflagged()
 
 # INPUT
@@ -13,7 +13,7 @@
 
 
 """
-This script is used to remove SNPs with median read coverage <20, median VAF <0.2 or 
+This script is used to remove SNVs with median read coverage <20, median VAF <0.2 or 
 median VAF >0.9 from a Platypus VCFs. For each call, it checks if the median read coverage 
 and median VAF (number of reads supporting variant / total reads) are inside the defined, 
 threshold (COV=20, VAF=0.2-0.9) and otherwise it discards the variant. Median VAF is 
@@ -28,7 +28,7 @@ import re
 
 # If not 1 argument: print help
 if len(sys.argv) != 2:
-    print '\nSomatypus_IndelRescuedFilter.py: Discards SNPs with median read coverage <20, median VAF <0.2 or median VAF >0.9'
+    print '\nSomatypus_IndelRescuedFilter.py: Discards SNVs with median read coverage <20, median VAF <0.2 or median VAF >0.9'
     print '                                 from a Platypus output VCF file.'
     print '                                 Median VAF is computed only in samples with >2 reads supporting the variant.'
     print '                                 This script is intended to be used on the variants flagged by the indel filter,'
@@ -64,7 +64,7 @@ print '\nInput file:  ', vcfFile
 print 'Output file: ', outFile  
 
 
-# Extract SNPs from each sample, if they are not in the exclude list
+# Extract SNVs from each sample, if they are not in the exclude list
 count1 = 0
 count2 = 0
 with open(vcfFile, 'r') as vcf, open(outFile, 'w') as out:

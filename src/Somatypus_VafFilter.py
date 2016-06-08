@@ -6,16 +6,16 @@
 
 # Somatypus_VafFilter.py
 # Discards variants with a VAF >0.9 in all samples from two Platypus output VCF files
-# (SNPs and indels)
+# (SNVs and indels)
 # Called by merge_filter_all()
 
 # INPUT
-# snpFile: path to SNPs VCF file
+# snvFile: path to SNVs VCF file
 # indFile: path to indels VCF file
 
 
 """
-This script is used to remove consistent high-VAF SNPs from two Platypus VCFs. 
+This script is used to remove consistent high-VAF SNVs from two Platypus VCFs. 
 For each call, it checks if the VAF (number of reads supporting variant / total reads)
 is more than 0.9 (by default) across all the samples, and in that case it discards the
 variant.
@@ -31,24 +31,24 @@ MAXVAF = 0.9
 
 
 if len(sys.argv) != 3:
-    print '\nSomatypus_VafFilter.py: Discards variants with a VAF >0.9 in all samples from two Platypus output VCF files'
-    print '                        (one for SNPs and one for indels).'
+    print '\nSomatypus_VAFfilter.py: Discards variants with a VAF >0.9 in all samples from two Platypus output VCF files'
+    print '                        (one for SNVs and one for indels).'
     print '                        *All calls in the VCF must be biallelic (no commas in the ALT column).*'
     print '                 Input: Path to VCF files.'
-    print '                 Usage: Somatypus_VafFilter.py /path/to/snps.vcf /path/to/indels.vcf\n'
+    print '                 Usage: Somatypus_VAFfilter.py /path/to/snvs.vcf /path/to/indels.vcf\n'
     sys.exit(0)
 
 
-script, snpFile, indFile = sys.argv
+script, snvFile, indFile = sys.argv
 
 
 # Compose path of output files
-outFileSNP = snpFile[:-4] + '.VAFfilt.vcf'
+outFileSNV = snvFile[:-4] + '.VAFfilt.vcf'
 outFileInd = indFile[:-4] + '.VAFfilt.vcf'
 
-print '\nInput files:    ', snpFile
+print '\nInput files:    ', snvFile
 print '                ', indFile
-print 'Output files:   ', outFileSNP
+print 'Output files:   ', outFileSNV
 print '                ', outFileInd
   
 
@@ -58,12 +58,12 @@ countInd1 = 0
 countInd2 = 0
 
 
-# Read every variant in the SNPs VCF
-with open(snpFile, 'r') as inSNP, open(outFileSNP, 'w') as outSNP:
-    for line in inSNP:
+# Read every variant in the SNVs VCF
+with open(snvFile, 'r') as inSNV, open(outFileSNV, 'w') as outSNV:
+    for line in inSNV:
         
         if line.startswith('#'):
-            outSNP.write(line)
+            outSNV.write(line)
         
         else: 
             countSnp1 = countSnp1 + 1
@@ -84,10 +84,10 @@ with open(snpFile, 'r') as inSNP, open(outFileSNP, 'w') as outSNP:
                 # If VAF < threshold in any sample, write to corresponding output file
                 if vaf <= MAXVAF:
                     countSnp2 = countSnp2 + 1
-                    outSNP.write(line)
+                    outSNV.write(line)
                     break
              
-print '\n' + str(countSnp1 - countSnp2) + ' high-VAF SNPs discarded'
+print '\n' + str(countSnp1 - countSnp2) + ' high-VAF SNVs discarded'
 
 
 # Read every variant in the indels VCF
