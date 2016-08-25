@@ -607,7 +607,7 @@ hash Platypus.py 2>/dev/null || { echo -e "\nERROR: Platypus.py: command not fou
 hash tabix 2>/dev/null || { echo -e "\nERROR: tabix: command not found. Please install the SAMtools tabix package and add its directory to your PATH.\n" >&2; exit 1; }    
 hash bgzip 2>/dev/null || { echo -e "\nERROR: bgzip: command not found. Please install the SAMtools tabix package and add its directory to your PATH.\n" >&2; exit 1; }    
 hash vcf-sort 2>/dev/null || { echo -e "\nERROR: vcf-sort: command not found. Please install VCFtools and add its directory to your PATH.\n" >&2; exit 1; }    
-hash Somatypus_SplitMA-MNVs.py 2>/dev/null || { echo -e "\nERROR: Somatypus directory not included in the PATH. Please add the somatypus/bin directory to your PATH.\n" >&2; exit 1; }    
+hash Somatypus_SplitMA-MNVs.py 2>/dev/null || { echo -e "\nERROR: Somatypus directory not included in the PATH. Please add the somatypus/src directory to your PATH.\n" >&2; exit 1; }    
 
 
 # START RUNNING
