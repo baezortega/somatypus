@@ -1,4 +1,4 @@
-#### Download the latest release: [Somatypus 1.2](../../archive/v1.2.zip).
+#### Download the latest release: Somatypus 1.2  ( [zip](../../archive/v1.2.zip) | [tar.gz](../../archive/v1.2.tar.gz) ).
 
 ---
 
@@ -8,8 +8,8 @@ Somatypus
 
 ### A Platypus-based variant calling pipeline for cancer data
 
-Adrian Baez-Ortega  
-Transmissible Cancer Group, University of Cambridge
+__Adrian Baez-Ortega  
+Transmissible Cancer Group, University of Cambridge__
 
 Somatypus is an open-source pipeline that makes use of the powerful variant caller Platypus for calling germ-line and somatic SNPs and indels in sequencing data coming from a set of unpaired samples. It has been designed to offer great sensitivity and specificity, even for low-frequency somatic mutations found in cancer genomes. Although this pipeline can be applied to any kind of cancer sequence data, it is particularly useful for the processing of data obtained from many tumour samples that are closely related to each other, and which lack matched normal samples, such as transmissible cancer or metastasis data.
 
