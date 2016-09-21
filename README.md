@@ -1,4 +1,4 @@
-#### Download the latest release: Somatypus 1.2  ( [zip](../../archive/v1.2.zip) | [tar.gz](../../archive/v1.2.tar.gz) ).
+#### Download the latest release: Somatypus 1.2.1  ( [zip](../../archive/v1.2.1.zip) | [tar.gz](../../archive/v1.2.1.tar.gz) ).
 
 ---
 
