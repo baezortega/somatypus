@@ -65,10 +65,10 @@ Somatypus pipeline itself (the somatypus-x.x folder) into it.
 
 The following instructions assume that you have administrator privileges in the system 
 you are using (i.e. that you can do "sudo"); otherwise, you should contact you system's
-administrator. Although it should be obvious, please note that you need to replace things
-like "path/to/" and "/FULL/PATH/TO/" with the actual path to the relevant folder.
+administrator. __Although it should be obvious, please note that you need to replace
+things like "path/to/" and "/FULL/PATH/TO/" with the actual path to the relevant folder.
 "/FULL/PATH/TO/" indicates that the absolute path (beginning at "/", e.g. /home/user/...)
-must be used.
+must be used.__
 
 
 The recommended installation order is:
@@ -209,12 +209,13 @@ The number of CPUs is also optional (default is 1) but, if specified, must be at
 
 Finally, additional calling options can be passed to Platypus through the `-p` argument. The entire additional options string must be quoted, and options must be separated by spaces. However, those options already specified in the pipeline cannot be included, namely: `--logFileName`, `--refFile`, `--bamFiles`, `--regions`, `--minPosterior`, `--minReads`, `--minFlank`, `--trimReadFlank`, `--source`, `--getVariantsFromBAMs`, `--nCPU`, or `--output` (or `-o`). (For obvious reasons, they should also not include `--help` or `-h`.)
 
-A list of all the Platypus options can be consulted by running: `Platypus.py callVariants -h`.
+A list of all the Platypus options can be consulted via: `Platypus.py callVariants -h`.
 
 The full log of the pipeline execution will be stored in a file named SOMATYPUS_<*date+time*>.log, in the logs subfolder of the output directory, together with the logs of most of the steps. The log files and the temporary folders containing intermediate files will be numbered according to the number of the step(s) that interact with them.
 
 
-#### For more information on the pipeline and output files, read the full documentation in [docs/Somatypus Documentation.pdf](docs/Somatypus%20Documentation.pdf).
+### For more information on the pipeline and output files, please read the full documentation in 
+[docs/Somatypus Documentation.pdf](docs/Somatypus%20Documentation.pdf).
 
 
 ---
