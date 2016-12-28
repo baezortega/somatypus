@@ -1,4 +1,4 @@
-#### Download the latest release: Somatypus 1.2.1  ( [zip](../../archive/v1.2.1.zip) | [tar.gz](../../archive/v1.2.1.tar.gz) ).
+#### Download the latest release: Somatypus 1.3  ( [zip](../../archive/v1.3.zip) | [tar.gz](../../archive/v1.3.tar.gz) ).
 
 ---
 
@@ -38,23 +38,6 @@ Somatypus has been tested on Ubuntu (14.04.4) systems, and it should behave well
 * Allow a highly customised execution — unless the source code is altered.
 
 
-#### Read the full documentation in [docs/Somatypus Documentation.pdf](docs/Somatypus%20Documentation.pdf).
-
-
----
-
-## Licence
-
-Copyright © 2016 Transmissible Cancer Group, University of Cambridge  
-Author: Adrian Baez-Ortega ([ORCID 0000-0002-9201-4420] (http://orcid.org/0000-0002-9201-4420); ab2324@cam.ac.uk)
-
-Somatypus is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses.
-
-
 ---
 
 ## Installation
@@ -82,8 +65,8 @@ Somatypus pipeline itself (the somatypus-x.x folder) into it.
 The following instructions assume that you have administrator privileges in the system 
 you are using (i.e. that you can do "sudo"); otherwise, you should contact you system's
 administrator. Although it should be obvious, please note that you need to replace things
-like "path/to/" and "/\*FULL/PATH/TO\*/" with the actual path to the relevant folder.
-"/\*FULL/PATH/TO\*/" indicates that the absolute path (beginning at "/", e.g. /home/user/...)
+like "path/to/" and "/FULL/PATH/TO/" with the actual path to the relevant folder.
+"/FULL/PATH/TO/" indicates that the absolute path (beginning at "/", e.g. /home/user/...)
 must be used.
 
 
@@ -127,7 +110,7 @@ The recommended installation order is:
 
     After this, you need to add the htslib directory to your LD_LIBRARY_PATH environment variable. You can do this either by editing your ~/.bashrc file with a text editor (e.g. nano) and adding the following line:
 
-        export LD_LIBRARY_PATH=/*FULL/PATH/TO*/htslib-x.x:$LD_LIBRARY_PATH
+        export LD_LIBRARY_PATH=/FULL/PATH/TO/htslib-x.x:$LD_LIBRARY_PATH
 
     Or just by appending the relevant line to the file with:
 
@@ -169,12 +152,12 @@ The recommended installation order is:
  
     The last step is adding the Somatypus directory to your PATH environment variable, so that the somatypus command can be called from the command line. You can do this either by editing your ~/.bashrc file with a text editor (e.g. nano) and adding the line:
 
-        export PATH=/*FULL/PATH/TO*/somatypus-x.x/src:$PATH
+        export PATH=/FULL/PATH/TO/somatypus-x.x/src:/FULL/PATH/TO/somatypus-x.x/utils:$PATH
 
     Or just by appending the relevant line to the file with:
 
         cd path/to/somatypus-x.x
-        echo "export PATH=$PWD/src:\$PATH" >> ~/.bashrc
+        echo "export PATH=$PWD/src:$PWD/utils:\$PATH" >> ~/.bashrc
    
     Either way, it is then necessary to source the .bashrc file for the changes to be applied:
     
@@ -189,4 +172,59 @@ Once all the dependencies and the pipeline have been installed, you should be ab
     vcf-sort -h
     somatypus
 
-__And now you can have fun.__
+And now you can have fun.
+
+
+---
+
+## Running Somatypus
+
+When the pipeline is called via the `somatypus` command with no options (or with `-h`), it displays the usage information.
+
+    | SOMATYPUS
+    | A Platypus-based variant calling pipeline for cancer data
+    | Version x.x
+    |
+    | Required input:
+    |    -i  Absolute path to folder containing the input BAM files (accompanied by BAI indices).
+    |    -g  Absolute path to reference genome FASTA file (accompanied by FAI index).
+    |    -o  Absolute path to the output folder (it will be created if needed).
+    |
+    | Optional input:
+    |    -r  Absolute path to file of regions to use, one per line in CHR:START-END format.
+    |    -c  Number of CPUs (processes) for Platypus *(should not exceed 8 due to a bug)*.
+    |    -p  Additional options for Platypus, within quotes and separated by spaces.
+    |
+    | Options:
+    |    -h  Print this usage information and exit.
+    |    -v  Print version and exit.
+    |
+    | Usage:
+    |    somatypus -i /path/to/bams_dir -o /path/to/out_dir -g /path/to/genome.fna -r /path/to/regions.txt -c <1-8> -p "--option=VAL --option=VAL"	
+
+It is advisable that all the input paths be absolute, rather than relative. An optional regions file allows the user to define a set of genomic regions (e.g. exons) wherein to perform the calling. The regions file must be a text file containing one region per line, in CHR:START-END format (e.g. 1:1028676-1028844. The chromosome labels must match those in the reference FASTA and in the sample BAMs).
+
+The number of CPUs is also optional (default is 1) but, if specified, must be at least 1, and should not exceed 8 (or even less, depending on the amount of data), due to an inveterate Platypus bug that can cause an extremely excessive memory allocation attempt (see the [full documentation](docs/Somatypus%20Documentation.pdf)).
+
+Finally, additional calling options can be passed to Platypus through the `-p` argument. The entire additional options string must be quoted, and options must be separated by spaces. However, those options already specified in the pipeline cannot be included, namely: `--logFileName`, `--refFile`, `--bamFiles`, `--regions`, `--minPosterior`, `--minReads`, `--minFlank`, `--trimReadFlank`, `--source`, `--getVariantsFromBAMs`, `--nCPU`, or `--output` (or `-o`). (For obvious reasons, they should also not include `--help` or `-h`.)
+
+A list of all the Platypus options can be consulted by running: `Platypus.py callVariants -h`.
+
+The full log of the pipeline execution will be stored in a file named SOMATYPUS_<*date+time*>.log, in the logs subfolder of the output directory, together with the logs of most of the steps. The log files and the temporary folders containing intermediate files will be numbered according to the number of the step(s) that interact with them.
+
+
+#### For more information on the pipeline and output files, read the full documentation in [docs/Somatypus Documentation.pdf](docs/Somatypus%20Documentation.pdf).
+
+
+---
+
+## Licence
+
+Copyright © 2016 Transmissible Cancer Group, University of Cambridge  
+Author: Adrian Baez-Ortega ([ORCID 0000-0002-9201-4420] (http://orcid.org/0000-0002-9201-4420); ab2324@cam.ac.uk)
+
+Somatypus is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses.
