@@ -11,7 +11,7 @@ Somatypus
 __Adrian Baez-Ortega  
 Transmissible Cancer Group, University of Cambridge__
 
-Somatypus is an open-source pipeline that makes use of the powerful variant caller Platypus for calling germ-line and somatic SNPs and indels in sequencing data coming from a set of unpaired samples. It has been designed to offer great sensitivity and specificity, even for low-frequency somatic mutations found in cancer genomes. Although this pipeline can be applied to any kind of cancer sequence data, it is particularly useful for the processing of data obtained from many tumour samples that are closely related to each other, and which lack matched normal samples, such as transmissible cancer or metastasis data.
+Somatypus is an open-source pipeline that makes use of the powerful variant caller Platypus for calling germline and somatic SNPs and indels in sequencing data coming from a set of unpaired samples. It has been designed to offer great sensitivity and specificity, even for low-frequency somatic mutations found in cancer genomes. Although this pipeline can be applied to any kind of cancer sequence data, it is particularly useful for the processing of data obtained from many tumour samples that are closely related to each other, and which lack matched normal samples, such as transmissible cancer or metastasis data.
 
 Somatypus has been tested on Ubuntu (14.04.4) systems, and it should behave well on any Linux distribution. It has not been tested on Mac systems, but it might work, maybe requiring some minor code modifications.
 
@@ -31,7 +31,7 @@ Somatypus has been tested on Ubuntu (14.04.4) systems, and it should behave well
 
 * Call long indels or structural variants.
 
-* Manage samples in pairs, or distinguish between ‘tumour’ and ‘host/normal’ samples, or between germ-line and somatic variants. Identification of somatic variants must be performed downstream.
+* Manage samples in pairs, or distinguish between "tumour" and "host/normal" samples, or between germline and somatic variants. Identification of somatic variants must be performed downstream.
 
 * Take into account contamination between samples. Identification of variants caused by cross-sample contamination must be performed downstream.
 
