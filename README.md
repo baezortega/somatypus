@@ -11,31 +11,32 @@ Somatypus
 __Adrian Baez-Ortega  
 Transmissible Cancer Group, University of Cambridge__
 
-Somatypus is an open-source pipeline that makes use of the powerful variant caller Platypus for calling germline and somatic SNPs and indels in sequencing data coming from a set of unpaired samples. It has been designed to offer great sensitivity and specificity, even for low-frequency somatic mutations found in cancer genomes. Although this pipeline can be applied to any kind of cancer sequence data, it is particularly useful for the processing of data obtained from many tumour samples that are closely related to each other, and which lack matched normal samples, such as transmissible cancer or metastasis data.
+Somatypus is an open-source pipeline that makes use of the powerful variant caller Platypus for identifying germline and somatic SNVs and indels in sequencing data coming from a set of unpaired samples. It has been designed to offer great sensitivity and specificity, even for low-frequency somatic mutations found in cancer genomes. Although this pipeline can be applied to any cancer sequence data, it is particularly useful for the processing of data obtained from many tumour samples that are closely related to each other and lack matched normal samples, such as transmissible cancer or metastasis data.
 
-Somatypus has been tested on Ubuntu (14.04.4) systems, and it should behave well on any Linux distribution. It has not been tested on Mac systems, but it might work, maybe requiring some minor code modifications.
+Somatypus has been tested on Ubuntu (14.04.4) systems, and it should work well on any Linux distribution. It has not been tested on Mac systems, although it may work after some minor code modifications.
 
-##### Somatypus does...
+
+#### Somatypus does...
 
 * Call single nucleotide variants (SNVs) and short insertions/deletions (indels) from any number of sequence alignment files (subject to memory constraints), at a probably unmatched speed.
 
-* Filter low-quality or ambiguous variants, while preserving those variants occurring with low frequency (in very few samples) and aberrant copy number (not fitting a diploid model).
+* Filter low-quality or ambiguous variants, while keeping those variants occurring with low frequency (in a few samples) or aberrant copy number (not fitting a diploid model).
 
-* Allow the inclusion of additional calling options for Platypus, as long as they do not override the ones used in the pipeline.
+* Allow the use of additional calling options for Platypus, as long as they do not override the ones defined in the pipeline.
 
 * Run seamlessly from a single command.
 
 * Resume execution after an unexpected interruption.
 
-##### Somatypus does not...
+#### Somatypus does not...
 
-* Call long indels or structural variants.
+* Call long indels, structural variants or copy number changes.
 
-* Manage samples in pairs, or distinguish between "tumour" and "host/normal" samples, or between germline and somatic variants. Identification of somatic variants must be performed downstream.
+* Manage samples in pairs, or distinguish between “tumour” and “host/normal” samples (or between germline and somatic variants). Identification of somatic variants must be performed downstream.
 
-* Take into account contamination between samples. Identification of variants caused by cross-sample contamination must be performed downstream.
+* Take into account cross-sample contamination. Identification of variants caused by contamination must be performed downstream.
 
-* Allow a highly customised execution — unless the source code is altered.
+* Allow extensive workflow customisation (unless the source code is altered).
 
 
 ---
