@@ -180,7 +180,7 @@ And now you can have fun.
 
 ## Running Somatypus
 
-When the pipeline is called via the `somatypus` command with no options (or with `-h`), it displays the usage information.
+When the pipeline is run via the `somatypus` command with no options (or with `-h`), it displays the usage information.
 
     | SOMATYPUS
     | A Platypus-based variant calling pipeline for cancer data
@@ -211,11 +211,10 @@ Finally, additional calling options can be passed to Platypus through the `-p` a
 
 A list of all the Platypus options can be consulted via: `Platypus.py callVariants -h`.
 
-The full log of the pipeline execution will be stored in a file named SOMATYPUS_<*date+time*>.log, in the logs subfolder of the output directory, together with the logs of most of the steps. The log files and the temporary folders containing intermediate files will be numbered according to the number of the step(s) that interact with them.
+The full log of the pipeline execution will be stored in a file named SOMATYPUS_<*date+time*>.log, in the logs subfolder of the output directory, together with the logs of most of the steps. The log files and the temporary folders containing intermediate files will be numbered according to the number of the steps that interact with them.
 
 
-### For more information on the pipeline and output files, please read the full documentation in 
-[docs/Somatypus Documentation.pdf](docs/Somatypus%20Documentation.pdf).
+### For more information on the workflow and output files, please read the full documentation in [docs/Somatypus Documentation.pdf](docs/Somatypus%20Documentation.pdf).
 
 
 ---
