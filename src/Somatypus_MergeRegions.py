@@ -4,7 +4,7 @@
 # Adrian Baez-Ortega, Transmissible Cancer Group, University of Cambridge
 # 14/05/2016
 
-# Somatypus_MergeIndelRegions.py
+# Somatypus_MergeRegions.py
 # Merges 'var-regions' used for re-genotyping of indels that are missing after genotyping
 # Called by genotyping()
 
@@ -25,10 +25,10 @@ import re
 
 # If not 1 arguments: print help
 if len(sys.argv) != 2:
-    print '\nSomatypus_MergeIndelRegions.py: Merges the regions used for re-genotyping of indels that are'
-    print '                                missing after the first genotyping.'
-    print '                                Input: A file with the regions in CHR:START-END format, one per line.'
-    print '                                Usage: Somatypus_MergeIndelRegions.py /path/to/regions.txt\n'
+    print '\nSomatypus_MergeRegions.py: Merges the regions used for re-genotyping of indels that are'
+    print '                           missing after the first genotyping.'
+    print '                           Input: A file with the regions in CHR:START-END format, one per line.'
+    print '                           Usage: Somatypus_MergeRegions.py /path/to/regions.txt\n'
     sys.exit(0)
 
 
