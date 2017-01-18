@@ -246,10 +246,10 @@ genotyping() {
     if [ "$IND" -eq 0 ]; then
     
         # If the user input a regions file: include the --regions argument
-        REGIONSARG=""
-        if [ "$REGIONS" != "no" ]; then
-            REGIONSARG="--regions=$OUTDIR/8-18_genotyped/regions_indels.txt"
-        fi
+        #REGIONSARG=""
+        #if [ "$REGIONS" != "no" ]; then
+        REGIONSARG="--regions=$OUTDIR/8-18_genotyped/regions_indels.txt"
+        #fi
 
         # Run Platypus to genotype indels
         Platypus.py callVariants \
@@ -300,10 +300,10 @@ genotyping() {
     else
 
         # If the user input a regions file: include the --regions argument
-        REGIONSARG=""
-        if [ "$REGIONS" != "no" ]; then
-            REGIONSARG="--regions=$OUTDIR/8-18_genotyped/regions_allele${IND}.txt"
-        fi
+        #REGIONSARG=""
+        #if [ "$REGIONS" != "no" ]; then
+        REGIONSARG="--regions=$OUTDIR/8-18_genotyped/regions_allele${IND}.txt"
+        #fi
 
         # Run Platypus to genotype the specified allele
         Platypus.py callVariants \
@@ -383,10 +383,10 @@ genotyping_indelflagged() {
     IND="$1"
 
     # If the user input a regions file: include the --regions argument
-    REGIONSARG=""
-    if [ "$REGIONS" != "no" ]; then
-        REGIONSARG="--regions=$OUTDIR/8-18_genotyped/regions_allele${IND}_indelExcluded.txt"
-    fi
+    #REGIONSARG=""
+    #if [ "$REGIONS" != "no" ]; then
+    REGIONSARG="--regions=$OUTDIR/8-18_genotyped/regions_allele${IND}_indelExcluded.txt"
+    #fi
 
     # Run Platypus to genotype the specified allele
     Platypus.py callVariants \
