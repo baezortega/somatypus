@@ -57,7 +57,10 @@ def median(l):
         if not len(l) % 2:
             return (l[half - 1] + l[half]) / 2.0
         return l[half]
-    return l[0]
+    elif len(l) == 1:
+        return l[0]
+    else:
+        return None
 
 
 # Compose path to output VCF file
