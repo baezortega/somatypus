@@ -204,7 +204,9 @@ When the pipeline is run via the `somatypus` command with no options (or with `-
     | Usage:
     |    somatypus -i /path/to/bams_dir -o /path/to/out_dir -g /path/to/genome.fna -r /path/to/regions.txt -c <1-8> -p "--option=VAL --option=VAL"	
 
-It is advisable that all the input paths be absolute, rather than relative. An optional regions file allows the user to define a set of genomic regions (e.g. exons) wherein to perform the calling. The regions file must be a text file containing one region per line, in CHR:START-END format (e.g. 1:1028676-1028844. The chromosome labels must match those in the reference FASTA and in the sample BAMs). If no regions file is provided, regions of +/-200 bp around each variant will be defined during genotyping, in order to increase efficiency. This behaviour can be disabled via the `-d` option (which is incompatible with `-r`).
+It is advisable that all the input paths be absolute, rather than relative. An optional regions file allows the user to define a set of genomic regions (e.g. exons) wherein to perform the calling. The regions file must be a text file containing one region per line, in CHR:START-END format (e.g. 1:1028676-1028844. The chromosome labels must match those in the reference FASTA and in the sample BAMs). 
+
+If no regions file is provided, regions of +/-200 bp around each variant will be defined during genotyping, in order to increase efficiency. This behaviour can be disabled via the `-d` option (which is incompatible with `-r`).
 
 The number of CPUs is also optional (default is 1) but, if specified, must be at least 1, and should not exceed 8 (or even less, depending on the amount of data), due to an inveterate Platypus bug that can cause an extremely excessive memory allocation attempt (see the [full documentation](docs/Somatypus%20Documentation.pdf)).
 
