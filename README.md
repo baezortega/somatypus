@@ -197,17 +197,18 @@ When the pipeline is run via the `somatypus` command with no options (or with `-
     |    -p  Additional options for Platypus, within quotes and separated by spaces.
     |
     | Options:
+    |    -d  Disable use of regions around the variants during genotyping (incompatible with -r).
     |    -h  Print this usage information and exit.
     |    -v  Print version and exit.
     |
     | Usage:
     |    somatypus -i /path/to/bams_dir -o /path/to/out_dir -g /path/to/genome.fna -r /path/to/regions.txt -c <1-8> -p "--option=VAL --option=VAL"	
 
-It is advisable that all the input paths be absolute, rather than relative. An optional regions file allows the user to define a set of genomic regions (e.g. exons) wherein to perform the calling. The regions file must be a text file containing one region per line, in CHR:START-END format (e.g. 1:1028676-1028844. The chromosome labels must match those in the reference FASTA and in the sample BAMs).
+It is advisable that all the input paths be absolute, rather than relative. An optional regions file allows the user to define a set of genomic regions (e.g. exons) wherein to perform the calling. The regions file must be a text file containing one region per line, in CHR:START-END format (e.g. 1:1028676-1028844. The chromosome labels must match those in the reference FASTA and in the sample BAMs). If no regions file is provided, regions of +/-200 bp around each variant will be defined during genotyping, in order to increase efficiency. This behaviour can be disabled via the `-d` option (which is incompatible with `-r`).
 
 The number of CPUs is also optional (default is 1) but, if specified, must be at least 1, and should not exceed 8 (or even less, depending on the amount of data), due to an inveterate Platypus bug that can cause an extremely excessive memory allocation attempt (see the [full documentation](docs/Somatypus%20Documentation.pdf)).
 
-Finally, additional calling options can be passed to Platypus through the `-p` argument. The entire additional options string must be quoted, and options must be separated by spaces. However, those options already specified in the pipeline cannot be included, namely: `--logFileName`, `--refFile`, `--bamFiles`, `--regions`, `--minPosterior`, `--minReads`, `--minFlank`, `--trimReadFlank`, `--source`, `--getVariantsFromBAMs`, `--nCPU`, or `--output` (or `-o`). (For obvious reasons, they should also not include `--help` or `-h`.)
+Finally, additional calling options can be passed to Platypus via the `-p` option. The entire additional options string must be quoted, and options must be separated by spaces. However, those options already specified in the pipeline cannot be included, namely: `--logFileName`, `--refFile`, `--bamFiles`, `--regions`, `--minPosterior`, `--minReads`, `--minFlank`, `--trimReadFlank`, `--source`, `--getVariantsFromBAMs`, `--nCPU`, or `--output` (or `-o`). (For obvious reasons, they should also not include `--help` or `-h`.)
 
 A list of all the Platypus options can be consulted via: `Platypus.py callVariants -h`.
 
