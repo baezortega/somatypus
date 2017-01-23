@@ -43,6 +43,7 @@ print_help() {
     echo "|    -p  Additional options for Platypus, within quotes and separated by spaces."
     echo "|"
     echo "| Options:"
+    echo "|    -d  Disable use of regions around the variants during genotyping (incompatible with -r)."
     echo "|    -h  Print this usage information and exit."
     echo "|    -v  Print version and exit."
     echo "|"
@@ -218,16 +219,18 @@ prepare_genotyping() {
     mkdir -p $OUTDIR/8-18_genotyped
 
     # If the user did not input a regions file, define regions of +/-200 bp around every variant
-    if [ "$REGIONS" == "no" ]; then
+    # (unless -d is specified)
+    if [ "$REGIONS" == "no" ] && [ "$NOREGIONS" == "F" ]; then
+        echo -e "\nDefining regions of +/-200 bp around each variant for genotyping\n"
         awk '{if ($2 < 200) start=0; else start=$2-200; print $1 ":" start "-" $2+200}' $OUTDIR/5-7_merged/*.vcf > $OUTDIR/8-18_genotyped/variant_regions_200bp.txt
-        Somatypus_MergeRegions.py $OUTDIR/8-18_genotyped/variant_regions_200bp.txt
+        Somatypus_MergeRegions.py $OUTDIR/8-18_genotyped/variant_regions_200bp.txt > $OUTDIR/logs/8.0_merge_variant_regions.log
         REGIONS="$OUTDIR/8-18_genotyped/variant_regions_200bp_merged.txt"
     fi
     
     # Extract only regions containing variants
-    #if [ "$REGIONS" != "no" ]; then
-    Somatypus_ExtractRegions.py $REGIONS $OUTDIR/5-7_merged/MergedSNVs_allele1.vcf $OUTDIR/5-7_merged/MergedSNVs_allele2.vcf $OUTDIR/5-7_merged/MergedSNVs_allele3.vcf $OUTDIR/5-7_merged/MergedIndels.vcf $OUTDIR/8-18_genotyped 0 > $OUTDIR/logs/8_extract_regions.log
-    #fi
+    if [ "$REGIONS" != "no" ]; then
+        Somatypus_ExtractRegions.py $REGIONS $OUTDIR/5-7_merged/MergedSNVs_allele1.vcf $OUTDIR/5-7_merged/MergedSNVs_allele2.vcf $OUTDIR/5-7_merged/MergedSNVs_allele3.vcf $OUTDIR/5-7_merged/MergedIndels.vcf $OUTDIR/8-18_genotyped 0 > $OUTDIR/logs/8.1_extract_regions.log
+    fi
 
     # Create list of BAM files for Platypus
     ls -1 $BAMSDIR/*.bam > $OUTDIR/8-18_genotyped/bam_list.txt
@@ -246,10 +249,10 @@ genotyping() {
     if [ "$IND" -eq 0 ]; then
     
         # If the user input a regions file: include the --regions argument
-        #REGIONSARG=""
-        #if [ "$REGIONS" != "no" ]; then
-        REGIONSARG="--regions=$OUTDIR/8-18_genotyped/regions_indels.txt"
-        #fi
+        REGIONSARG=""
+        if [ "$REGIONS" != "no" ]; then
+            REGIONSARG="--regions=$OUTDIR/8-18_genotyped/regions_indels.txt"
+        fi
 
         # Run Platypus to genotype indels
         Platypus.py callVariants \
@@ -300,10 +303,10 @@ genotyping() {
     else
 
         # If the user input a regions file: include the --regions argument
-        #REGIONSARG=""
-        #if [ "$REGIONS" != "no" ]; then
-        REGIONSARG="--regions=$OUTDIR/8-18_genotyped/regions_allele${IND}.txt"
-        #fi
+        REGIONSARG=""
+        if [ "$REGIONS" != "no" ]; then
+            REGIONSARG="--regions=$OUTDIR/8-18_genotyped/regions_allele${IND}.txt"
+        fi
 
         # Run Platypus to genotype the specified allele
         Platypus.py callVariants \
@@ -383,10 +386,10 @@ genotyping_indelflagged() {
     IND="$1"
 
     # If the user input a regions file: include the --regions argument
-    #REGIONSARG=""
-    #if [ "$REGIONS" != "no" ]; then
-    REGIONSARG="--regions=$OUTDIR/8-18_genotyped/regions_allele${IND}_indelExcluded.txt"
-    #fi
+    REGIONSARG=""
+    if [ "$REGIONS" != "no" ]; then
+        REGIONSARG="--regions=$OUTDIR/8-18_genotyped/regions_allele${IND}_indelExcluded.txt"
+    fi
 
     # Run Platypus to genotype the specified allele
     Platypus.py callVariants \
@@ -508,7 +511,8 @@ REGIONS="no"
 OUTDIR=""
 CPUS=1
 EXTRA=""
-while getopts ":i:g:r:o:c:p:hv?" OPT; do
+NOREGIONS="F"
+while getopts ":i:g:r:o:c:p:dhv?" OPT; do
   case $OPT in
     i)
       BAMSDIR=$OPTARG
@@ -527,6 +531,9 @@ while getopts ":i:g:r:o:c:p:hv?" OPT; do
       ;;
     p)
       EXTRA=$OPTARG
+      ;;
+    d)
+      NOREGIONS="T"
       ;;
     h)
       print_help
@@ -611,6 +618,10 @@ for FILE in `ls $BAMSDIR/*.bam`; do
     fi
 done
 
+if  [ "$REGIONS" != "no" ] && [ "$NOREGIONS" != "F" ]; then
+    echo -e "\nWARNING: Options -r and -d are incompatible; -d will be ignored.\n" >&2
+fi
+
 
 
 # START RUNNING
@@ -630,6 +641,12 @@ if [ -z "$EXTRA" ]; then
 else
     echo "Extra Platypus options: $EXTRA"
 fi
+if  [ "$REGIONS" != "no" ] && [ "$NOREGIONS" != "F" ]; then
+    echo -e "WARNING: Options -r and -d are incompatible; -d will be ignored"
+elif [ "$NOREGIONS" != "F" ]; then
+    echo "The use of regions around the variants during genotyping is disabled"
+fi
+
 
 
 # Check if there is a checkpoint file from a previous run in the output folder
