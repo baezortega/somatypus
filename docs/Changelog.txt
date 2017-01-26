@@ -5,6 +5,7 @@
 ### Changed
 - Quality filtering for called/genotyped indels has been modified, so that 
   filtering based on Platypus quality flags is done in the same manner as for SNVs.
+- Improved code for merging of indel regions before genotyping (by Kevin Gori).
 - Fixed bug in median VAF calculation during the filtering of indel-flagged SNVs.
 - Minor change in the naming of intermediate genotyped VCF files.
 - Documentation updated.
