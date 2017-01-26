@@ -726,7 +726,7 @@ if [ "$STEP" -lt 5 ]; then
     # (the pipeline cannot assume that there will always be indel-flagged SNVs)
     if [ ! -s $OUTDIR/5-7_merged/indel_flagged_SNVs.txt ]; then
         echo -e "\nWARNING: File $OUTDIR/5-7_merged/indel_flagged_SNVs.txt is empty, possibly due to an error."
-        echo "Please check the log in $OUTDIR/logs/7_indel_merge.log"
+        echo "Please check the log in $OUTDIR/logs/5_indel_flag.log"
     else
         echo -e "\nSuccess"
     fi
