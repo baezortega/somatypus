@@ -70,7 +70,7 @@ with open(outFile, 'w') as out:
             continue
 
         merged_region = regions[chrom][0]
-        positions = merged_region.copy() # this is only used so terminal output is the same as original version
+        positions = merged_region[:] # this is only used so terminal output is the same as original version
 
         for test_region in regions[chrom][1:]:
             # If test_region starts before the active merged_region ends, then we know they overlap
@@ -87,7 +87,7 @@ with open(outFile, 'w') as out:
                 print('Positions {0} : {1} merged into {0}:{2}-{3}'.format(chrom, positions, merged_region[0],
                                                                            merged_region[1]))
                 merged_region = test_region
-                positions = merged_region.copy()
+                positions = merged_region[:]
 
         # Don't forget to output the final merged region
         out.write('{}:{}-{}\n'.format(chrom, merged_region[0], merged_region[1]))
