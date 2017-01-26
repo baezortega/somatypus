@@ -14,7 +14,6 @@
 # -r: path to file of regions in chr:start-end format (optional)
 # -c: number of CPUs (processes) for Platypus (*SHOULD NOT EXCEED 8 DUE TO BUG*) (optional)
 # -e: extra options for Platypus (within quotes, separated by spaces) (optional)
-# -w: use windows around the variants as regions during genotyping (optional)
 
 
 
@@ -44,7 +43,6 @@ print_help() {
     echo "|    -p  Additional options for Platypus, within quotes and separated by spaces."
     echo "|"
     echo "| Options:"
-    echo "|    -w  Use windows around the variants as regions during genotyping."
     echo "|    -h  Print this usage information and exit."
     echo "|    -v  Print version and exit."
     echo "|"
@@ -218,14 +216,6 @@ prepare_genotyping() {
 
     # Create directory for new region files (and genotyping output)
     mkdir -p $OUTDIR/8-18_genotyped
-
-    # If windows are enabled, define regions of +/-200 bp around every variant
-    if [ "$WINDOWS" != "no" ]; then
-        echo -e "\nDefining windows of +/-200 bp around each variant as regions for genotyping\n"
-        awk '{if ($2 < 200) start=0; else start=$2-200; print $1 ":" start "-" $2+200}' $OUTDIR/5-7_merged/*.vcf > $OUTDIR/8-18_genotyped/variant_regions_200bp.txt
-        Somatypus_MergeRegions.py $OUTDIR/8-18_genotyped/variant_regions_200bp.txt > $OUTDIR/logs/8.0_merge_variant_regions.log
-        REGIONS="$OUTDIR/8-18_genotyped/variant_regions_200bp_merged.txt"
-    fi
     
     # Extract only regions containing variants
     if [ "$REGIONS" != "no" ]; then
@@ -250,7 +240,7 @@ genotyping() {
     
         # If the user input a regions file: include the --regions argument
         REGIONSARG=""
-        if [ "$REGIONS" != "no" ] || [ "$WINDOWS" != "no" ]; then
+        if [ "$REGIONS" != "no" ]; then
             REGIONSARG="--regions=$OUTDIR/8-18_genotyped/regions_indels.txt"
         fi
 
@@ -304,7 +294,7 @@ genotyping() {
 
         # If the user input a regions file: include the --regions argument
         REGIONSARG=""
-        if [ "$REGIONS" != "no" ] || [ "$WINDOWS" != "no" ]; then
+        if [ "$REGIONS" != "no" ]; then
             REGIONSARG="--regions=$OUTDIR/8-18_genotyped/regions_allele${IND}.txt"
         fi
 
@@ -365,10 +355,6 @@ prepare_genotyping_indelflagged() {
         bgzip -f "${FILE%.*}".sorted.vcf
         tabix -f -p vcf "${FILE%.*}".sorted.vcf.gz
     done
-
-    if [ "$WINDOWS" != "no" ]; then
-        REGIONS="$OUTDIR/8-18_genotyped/variant_regions_200bp_merged.txt"
-    fi
     
     # If there is a regions file: extract only regions containing variants
     if [ "$REGIONS" != "no" ]; then
@@ -390,7 +376,7 @@ genotyping_indelflagged() {
 
     # If the user input a regions file: include the --regions argument
     REGIONSARG=""
-    if [ "$REGIONS" != "no" ] || [ "$WINDOWS" != "no" ]; then
+    if [ "$REGIONS" != "no" ]; then
         REGIONSARG="--regions=$OUTDIR/8-18_genotyped/regions_allele${IND}_indelExcluded.txt"
     fi
 
@@ -514,8 +500,7 @@ REGIONS="no"
 OUTDIR=""
 CPUS=1
 EXTRA=""
-WINDOWS="no"
-while getopts ":i:g:r:o:c:p:whv?" OPT; do
+while getopts ":i:g:r:o:c:p:hv?" OPT; do
   case $OPT in
     i)
       BAMSDIR=$OPTARG
@@ -534,9 +519,6 @@ while getopts ":i:g:r:o:c:p:whv?" OPT; do
       ;;
     p)
       EXTRA=$OPTARG
-      ;;
-    w)
-      WINDOWS="yes"
       ;;
     h)
       print_help
@@ -630,17 +612,16 @@ exec &> >(tee -ia $OUTDIR/logs/SOMATYPUS_`date +"%y%m%d%H%M"`.log)
 
 echo -e "\nThis is Somatypus $VERSION\n"
 
-echo "Input BAMs directory:    $BAMSDIR"
-echo "Input reference genome:  $REFERENCE"
-echo "Input regions file:      $REGIONS"
-echo "Output directory:        $OUTDIR"
-echo "Number of CPUs to use:   $CPUS"
+echo "Input BAMs directory:   $BAMSDIR"
+echo "Input reference genome: $REFERENCE"
+echo "Input regions file:     $REGIONS"
+echo "Output directory:       $OUTDIR"
+echo "Number of CPUs to use:  $CPUS"
 if [ -z "$EXTRA" ]; then
-    echo "Extra Platypus options:  no"
+    echo "Extra Platypus options: no"
 else
-    echo "Extra Platypus options:  $EXTRA"
+    echo "Extra Platypus options: $EXTRA"
 fi
-echo "Windows around variants: $WINDOWS"
 
 
 
@@ -797,7 +778,7 @@ if [ "$STEP" -lt 8 ]; then
     done
     check_file $OUTDIR/5-7_merged/MergedIndels.sorted.vcf.gz
     check_file $OUTDIR/5-7_merged/MergedIndels.sorted.vcf.gz.tbi
-    if [ "$REGIONS" != "no" ] || [ "$WINDOWS" != "no" ]; then
+    if [ "$REGIONS" != "no" ]; then
         check_file $OUTDIR/8-18_genotyped/regions_allele1.txt
         check_file $OUTDIR/8-18_genotyped/regions_indels.txt
     fi
@@ -857,7 +838,7 @@ if [ "$STEP" -lt 13 ]; then
         check_file "${FILE%.*}".sorted.vcf.gz
         check_file "${FILE%.*}".sorted.vcf.gz.tbi
     done
-    if [ "$REGIONS" != "no" ] || [ "$WINDOWS" != "no" ]; then
+    if [ "$REGIONS" != "no" ]; then
         check_file $OUTDIR/8-18_genotyped/regions_allele1_indelExcluded.txt
     fi
     check_file $OUTDIR/8-18_genotyped/bam_list.txt

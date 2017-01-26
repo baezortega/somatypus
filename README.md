@@ -197,18 +197,15 @@ When the pipeline is run via the `somatypus` command with no options (or with `-
     |    -p  Additional options for Platypus, within quotes and separated by spaces.
     |
     | Options:
-    |    -w  Use windows around the variants as regions during genotyping.
     |    -h  Print this usage information and exit.
     |    -v  Print version and exit.
     |
     | Usage:
-    |    somatypus -i /path/to/bams_dir -o /path/to/out_dir -g /path/to/genome.fna -r /path/to/regions.txt -c <1-8> -p "--option=VAL --option=VAL"	
+    |    somatypus -i /path/to/bams_dir -o /path/to/out_dir -g /path/to/genome.fna -r /path/to/regions.txt -c <1-8> -p "--option=VAL --option=VAL"
 
 It is advisable that all the input paths be absolute, rather than relative. 
 
 An optional regions file (`-r` option) allows the user to define a set of genomic regions (e.g. exons) wherein to perform the calling. The regions file must be a text file containing one region per line, in CHR:START-END format (e.g. 1:1028676-1028844. The chromosome names must match those in the FASTA and BAM files).
-
-The `-w` option enables the use of windows of +/-200 bp around each variant as regions for genotyping. This can be used to increase the efficiency of the genotyping process, especially in cases where no regions file is employed.
 
 The number of CPUs is also optional (default is 1) but, if specified, must be at least 1, and should not exceed 8 (or even less, depending on the amount of data), due to an inveterate Platypus bug that can cause an extremely excessive memory allocation attempt (see the [full documentation](docs/Somatypus%20Documentation.pdf)).
 
