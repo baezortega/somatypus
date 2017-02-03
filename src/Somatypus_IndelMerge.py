@@ -85,4 +85,4 @@ with open(outFile, 'w') as out:
         if len(mergedIndels[loc]) == 1:
             out.write(mergedIndels[loc][0])
 
-print 'Done!\n'
+print 'Done\n'

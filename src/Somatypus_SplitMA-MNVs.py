@@ -138,4 +138,4 @@ with open(tmpFile, 'r') as vcf:
 
 print count, 'MNPs found'
 os.remove(tmpFile)
-print 'Done!\n'
+print 'Done\n'

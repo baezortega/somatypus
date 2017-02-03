@@ -104,4 +104,4 @@ with open(outFile, 'w') as out:
         out.write(snv + '\n')
 
 
-print 'Done!\n'
+print 'Done\n'

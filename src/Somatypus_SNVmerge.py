@@ -136,4 +136,4 @@ with open(outFileF1, 'w') as out1, open(outFileF2, 'w') as out2, open(outFileF3,
             out3.write(excludedSNVs[id])
             second = False
 
-print '\nDone!\n'
+print '\nDone\n'

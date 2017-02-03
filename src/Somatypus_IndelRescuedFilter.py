@@ -98,4 +98,4 @@ with open(vcfFile, 'r') as vcf, open(outFile, 'w') as out:
                 
                 
 print '\n' + str(count1 - count2) + ' variants discarded'
-print 'Done!\n'
+print 'Done\n'
