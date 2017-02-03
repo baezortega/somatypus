@@ -13,7 +13,7 @@
 # allele1VCF: path to VCF with bi-allelic variants / 1st allele of multi-allelic SNVs
 # allele2VCF: path to VCF with 2nd allele of multi-allelic SNVs
 # allele3VCF: path to VCF with 3rd allele of multi-allelic SNVs
-# indelsVCF: path to VCF with indels (or "none", if excluded == 1)
+# indelsVCF: path to VCF with indels (or "none")
 # outDir: path to (existing) output folder
 # excluded: logical value indicating if the variants are indel-excluded SNVs (1) or not (0)
 
@@ -36,12 +36,12 @@ if len(sys.argv) != 8:
     print '\nSomatypus_ExtractRegions.py: Extracts regions from a regions file, if they contain variants from the VCFs.'
     print '                             The 4 VCF files correspond to: bi-allelic SNVs / 1st allele of'
     print '                             multi-allelic SNVs; 2nd allele of multi-allelic SNVs; 3rd allele of'
-    print '                             multi-allelic SNVs; indels (not needed if using indel-excluded SNVs).'
+    print '                             multi-allelic SNVs; and indels (if "none", this will not be used).'
     print '                             The regions are output to 4 different files, one for each input VCF.'
     print '                      Input: A file with the original regions in CHR:START-END format, one per line.'
     print '                             Four VCF files.'
     print '                             Path to (existing) output folder.'
-    print '                             Logical value indicating if the variants are indel-excluded SNVs (1; indels will not be used) or not (0).'
+    print '                             Logical value indicating if the variants are indel-excluded SNVs (1) or not (0).'
     print '                      Usage: Somatypus_ExtractRegions.py /path/to/regions.txt /path/to/var1.vcf /path/to/var2.vcf /path/to/var3.vcf </path/to/var4.vcf|"none"> /path/to/outDir <0/1>\n'
     sys.exit(0)
 
@@ -51,16 +51,15 @@ script, exomeFile, allele1VCF, allele2VCF, allele3VCF, indelsVCF, outDir, exclud
 
 # Compose paths to output region files
 print '\nExome regions file:', exomeFile
+outFileInd = outDir + '/regions_indels.txt'
 if int(excluded) == 0:
     outFile1 = outDir + '/regions_allele1.txt'
     outFile2 = outDir + '/regions_allele2.txt'
     outFile3 = outDir + '/regions_allele3.txt'
-    outFileInd = outDir + '/regions_indels.txt'
 else:
     outFile1 = outDir + '/regions_allele1_indelExcluded.txt'
     outFile2 = outDir + '/regions_allele2_indelExcluded.txt'
     outFile3 = outDir + '/regions_allele3_indelExcluded.txt'
-    outFileInd = outDir + '/blank'
 
 
 # Variables for counting and storing selected regions (exons)
@@ -111,9 +110,8 @@ with open(allele3VCF, 'r') as vcf:
                 allele3[chrom].append(pos)
             else:
                 allele3[chrom] = [pos]
-                
-# Indels are read only if indel-excluded SNVs are not input
-if int(excluded) == 0:
+
+if indelsVCF != 'none':
     print 'Reading file:', indelsVCF, '\n'
     with open(indelsVCF, 'r') as vcf:
         for line in vcf:
@@ -165,8 +163,8 @@ with open(exomeFile, 'r') as exome, \
                     print ' Found in Allele 3 VCF'
                     break
         
-        # If not indel-excluded SNVs: search indels dict
-        if int(excluded) == 0:
+        # If indels file input: search indels dict
+        if indelsVCF != 'none':
             if chrom in indels:
                 for pos in indels[chrom]:
                     if start <= pos and end >= pos:
@@ -180,8 +178,8 @@ print '\n', countExon, 'regions processed'
 print count1, 'regions output to file', outFile1
 print count2, 'regions output to file', outFile2
 print count3, 'regions output to file', outFile3
-if int(excluded) == 0:
+if indelsVCF != 'none':
     print countInd, 'regions output to file', outFileInd
 else:
     print 'Indels not considered'
-print '\nDone!\n'
+print '\nDone\n'

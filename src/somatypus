@@ -14,6 +14,7 @@
 # -r: path to file of regions in chr:start-end format (optional)
 # -c: number of CPUs (processes) for Platypus (*SHOULD NOT EXCEED 8 DUE TO BUG*) (optional)
 # -e: extra options for Platypus (within quotes, separated by spaces) (optional)
+# -w: use windows around the variants as regions during genotyping (optional)
 
 
 
@@ -43,6 +44,7 @@ print_help() {
     echo "|    -p  Additional options for Platypus, within quotes and separated by spaces."
     echo "|"
     echo "| Options:"
+    echo "|    -w  Use windows around the variants as regions during genotyping."
     echo "|    -h  Print this usage information and exit."
     echo "|    -v  Print version and exit."
     echo "|"
@@ -205,9 +207,11 @@ extract_indels() {
 prepare_genotyping() {
 
     # Sort, compress and index VCF files for inputting them to Platypus
-    vcf-sort $OUTDIR/5-7_merged/MergedIndels.vcf > $OUTDIR/5-7_merged/MergedIndels.sorted.vcf 2> /dev/null
-    bgzip -f $OUTDIR/5-7_merged/MergedIndels.sorted.vcf
-    tabix -f -p vcf $OUTDIR/5-7_merged/MergedIndels.sorted.vcf.gz
+    if [ -s $OUTDIR/5-7_merged/MergedIndels.vcf ]; then
+        vcf-sort $OUTDIR/5-7_merged/MergedIndels.vcf > $OUTDIR/5-7_merged/MergedIndels.sorted.vcf 2> /dev/null
+        bgzip -f $OUTDIR/5-7_merged/MergedIndels.sorted.vcf
+        tabix -f -p vcf $OUTDIR/5-7_merged/MergedIndels.sorted.vcf.gz
+    fi
     for FILE in `ls $OUTDIR/5-7_merged/MergedSNVs_allele?.vcf`; do
         vcf-sort $FILE > "${FILE%.*}".sorted.vcf 2> /dev/null
         bgzip -f "${FILE%.*}".sorted.vcf
@@ -217,9 +221,21 @@ prepare_genotyping() {
     # Create directory for new region files (and genotyping output)
     mkdir -p $OUTDIR/8-18_genotyped
     
+    # If windows are enabled, define regions of +/-200 bp around every variant
+    if [ "$WINDOWS" != "no" ]; then
+        echo -e "\nDefining windows of +/-200 bp around each variant as regions for genotyping"
+        awk '{if ($2 < 200) start=0; else start=$2-200; print $1 ":" start "-" $2+200}' $OUTDIR/5-7_merged/*.vcf > $OUTDIR/8-18_genotyped/variant_regions_200bp.txt
+        Somatypus_MergeRegions.py $OUTDIR/8-18_genotyped/variant_regions_200bp.txt > $OUTDIR/logs/8.0_merge_variant_regions.log
+        REGIONS="$OUTDIR/8-18_genotyped/variant_regions_200bp_merged.txt"
+    fi
+
     # Extract only regions containing variants
     if [ "$REGIONS" != "no" ]; then
-        Somatypus_ExtractRegions.py $REGIONS $OUTDIR/5-7_merged/MergedSNVs_allele1.vcf $OUTDIR/5-7_merged/MergedSNVs_allele2.vcf $OUTDIR/5-7_merged/MergedSNVs_allele3.vcf $OUTDIR/5-7_merged/MergedIndels.vcf $OUTDIR/8-18_genotyped 0 > $OUTDIR/logs/8.1_extract_regions.log
+        if [ -s $OUTDIR/5-7_merged/MergedIndels.vcf ]; then
+            Somatypus_ExtractRegions.py $REGIONS $OUTDIR/5-7_merged/MergedSNVs_allele1.vcf $OUTDIR/5-7_merged/MergedSNVs_allele2.vcf $OUTDIR/5-7_merged/MergedSNVs_allele3.vcf $OUTDIR/5-7_merged/MergedIndels.vcf $OUTDIR/8-18_genotyped 0 > $OUTDIR/logs/8.1_extract_regions.log
+        else
+            Somatypus_ExtractRegions.py $REGIONS $OUTDIR/5-7_merged/MergedSNVs_allele1.vcf $OUTDIR/5-7_merged/MergedSNVs_allele2.vcf $OUTDIR/5-7_merged/MergedSNVs_allele3.vcf none $OUTDIR/8-18_genotyped 0 > $OUTDIR/logs/8.1_extract_regions.log
+        fi
     fi
 
     # Create list of BAM files for Platypus
@@ -240,7 +256,7 @@ genotyping() {
     
         # If the user input a regions file: include the --regions argument
         REGIONSARG=""
-        if [ "$REGIONS" != "no" ]; then
+        if [ "$REGIONS" != "no" ] || [ "$WINDOWS" != "no" ]; then
             REGIONSARG="--regions=$OUTDIR/8-18_genotyped/regions_indels.txt"
         fi
 
@@ -294,7 +310,7 @@ genotyping() {
 
         # If the user input a regions file: include the --regions argument
         REGIONSARG=""
-        if [ "$REGIONS" != "no" ]; then
+        if [ "$REGIONS" != "no" ] || [ "$WINDOWS" != "no" ]; then
             REGIONSARG="--regions=$OUTDIR/8-18_genotyped/regions_allele${IND}.txt"
         fi
 
@@ -356,6 +372,10 @@ prepare_genotyping_indelflagged() {
         tabix -f -p vcf "${FILE%.*}".sorted.vcf.gz
     done
     
+    if [ "$WINDOWS" != "no" ]; then
+        REGIONS="$OUTDIR/8-18_genotyped/variant_regions_200bp_merged.txt"
+    fi
+    
     # If there is a regions file: extract only regions containing variants
     if [ "$REGIONS" != "no" ]; then
         Somatypus_ExtractRegions.py $REGIONS $OUTDIR/5-7_merged/IndelExcludedSNVs_allele1.vcf $OUTDIR/5-7_merged/IndelExcludedSNVs_allele2.vcf $OUTDIR/5-7_merged/IndelExcludedSNVs_allele3.vcf none $OUTDIR/8-18_genotyped 1 > $OUTDIR/logs/13_extract_regions_excluded.log
@@ -376,7 +396,7 @@ genotyping_indelflagged() {
 
     # If the user input a regions file: include the --regions argument
     REGIONSARG=""
-    if [ "$REGIONS" != "no" ]; then
+    if [ "$REGIONS" != "no" ] || [ "$WINDOWS" != "no" ]; then
         REGIONSARG="--regions=$OUTDIR/8-18_genotyped/regions_allele${IND}_indelExcluded.txt"
     fi
 
@@ -451,26 +471,40 @@ merge_filter_indelflagged() {
 # Merges and filters all genotyped variants to create the output VCF file
 merge_filter_all() {
 
-    # Collect all the genotyped SNVs and indels in two files
-    # Indels
-    cp $OUTDIR/8-18_genotyped/GenotypedIndels_first.vcf $OUTDIR/8-18_genotyped/GenotypedIndels_merged.vcf
-    tail -n +49 $OUTDIR/8-18_genotyped/GenotypedIndels_second.vcf >> $OUTDIR/8-18_genotyped/GenotypedIndels_merged.vcf 2> /dev/null
     # SNVs
+    # Collect all calls
     head -48 $OUTDIR/8-18_genotyped/GenotypedSNVs_allele1_first.vcf > $OUTDIR/8-18_genotyped/GenotypedSNVs_merged.vcf
     tail -q -n +49 $OUTDIR/8-18_genotyped/GenotypedSNVs_allele?_first.vcf >> $OUTDIR/8-18_genotyped/GenotypedSNVs_merged.vcf 2> /dev/null
     tail -q -n +49 $OUTDIR/8-18_genotyped/GenotypedSNVs_allele?_second.vcf >> $OUTDIR/8-18_genotyped/GenotypedSNVs_merged.vcf 2> /dev/null
-    tail -n +49 $OUTDIR/8-18_genotyped/GenotypedSNVs_indelExcluded_merged.filtered.VAFfilt.vcf >> $OUTDIR/8-18_genotyped/GenotypedSNVs_merged.vcf
-
-    # Filter SNV and indel calls with flags badReads, MQ, strandBias, SC or QD
+    if [ -s $OUTDIR/5-7_merged/indel_flagged_SNVs.txt ]; then
+        tail -n +49 $OUTDIR/8-18_genotyped/GenotypedSNVs_indelExcluded_merged.filtered.VAFfilt.vcf >> $OUTDIR/8-18_genotyped/GenotypedSNVs_merged.vcf 2> /dev/null
+    fi
+    
+    # Filter calls with flags badReads, MQ, strandBias, SC or QD
     awk '!(($7 ~ /badReads/) || ($7 ~ /MQ/) || ($7 ~ /strandBias/) || ($7 ~ /SC/) || ($7 ~ /QD/))' $OUTDIR/8-18_genotyped/GenotypedSNVs_merged.vcf > $OUTDIR/8-18_genotyped/GenotypedSNVs_merged.filtered.vcf
-    awk '!(($7 ~ /badReads/) || ($7 ~ /MQ/) || ($7 ~ /strandBias/) || ($7 ~ /SC/) || ($7 ~ /QD/))' $OUTDIR/8-18_genotyped/GenotypedIndels_merged.vcf > $OUTDIR/8-18_genotyped/GenotypedIndels_merged.filtered.vcf
-
-    # Filter variants with a VAF >0.9 in all samples
-    Somatypus_VAFfilter.py $OUTDIR/8-18_genotyped/GenotypedSNVs_merged.filtered.vcf $OUTDIR/8-18_genotyped/GenotypedIndels_merged.filtered.vcf > $OUTDIR/logs/18_VAF_filter.log
-
-    # Sort VCFs
+    
+    # Filter calls with a VAF >0.9 in all samples
+    Somatypus_VAFfilter.py $OUTDIR/8-18_genotyped/GenotypedSNVs_merged.filtered.vcf > $OUTDIR/logs/18.1_VAF_filter_SNVs.log
+    
+    # Sort VCF
     vcf-sort -c $OUTDIR/8-18_genotyped/GenotypedSNVs_merged.filtered.VAFfilt.vcf > $OUTDIR/Somatypus_SNVs_final.vcf 2> /dev/null
-    vcf-sort -c $OUTDIR/8-18_genotyped/GenotypedIndels_merged.filtered.VAFfilt.vcf > $OUTDIR/Somatypus_Indels_final.vcf 2> /dev/null
+    
+    
+    # Indels
+    if [ -s $OUTDIR/5-7_merged/MergedIndels.vcf ]; then
+        # Collect all calls
+        cp $OUTDIR/8-18_genotyped/GenotypedIndels_first.vcf $OUTDIR/8-18_genotyped/GenotypedIndels_merged.vcf
+        tail -n +49 $OUTDIR/8-18_genotyped/GenotypedIndels_second.vcf >> $OUTDIR/8-18_genotyped/GenotypedIndels_merged.vcf 2> /dev/null
+    
+        # Filter calls with flags badReads, MQ, strandBias, SC or QD
+        awk '!(($7 ~ /badReads/) || ($7 ~ /MQ/) || ($7 ~ /strandBias/) || ($7 ~ /SC/) || ($7 ~ /QD/))' $OUTDIR/8-18_genotyped/GenotypedIndels_merged.vcf > $OUTDIR/8-18_genotyped/GenotypedIndels_merged.filtered.vcf
+    
+        # Filter calls with a VAF >0.9 in all samples
+        Somatypus_VAFfilter.py $OUTDIR/8-18_genotyped/GenotypedIndels_merged.filtered.vcf > $OUTDIR/logs/18.2_VAF_filter_indels.log
+        
+        # Sort VCF
+        vcf-sort -c $OUTDIR/8-18_genotyped/GenotypedIndels_merged.filtered.VAFfilt.vcf > $OUTDIR/Somatypus_Indels_final.vcf 2> /dev/null
+    fi
         
 }
 
@@ -500,7 +534,8 @@ REGIONS="no"
 OUTDIR=""
 CPUS=1
 EXTRA=""
-while getopts ":i:g:r:o:c:p:hv?" OPT; do
+WINDOWS="no"
+while getopts ":i:g:r:o:c:p:whv?" OPT; do
   case $OPT in
     i)
       BAMSDIR=$OPTARG
@@ -519,6 +554,9 @@ while getopts ":i:g:r:o:c:p:hv?" OPT; do
       ;;
     p)
       EXTRA=$OPTARG
+      ;;
+    w)
+      WINDOWS="yes"
       ;;
     h)
       print_help
@@ -612,16 +650,17 @@ exec &> >(tee -ia $OUTDIR/logs/SOMATYPUS_`date +"%y%m%d%H%M"`.log)
 
 echo -e "\nThis is Somatypus $VERSION\n"
 
-echo "Input BAMs directory:   $BAMSDIR"
-echo "Input reference genome: $REFERENCE"
-echo "Input regions file:     $REGIONS"
-echo "Output directory:       $OUTDIR"
-echo "Number of CPUs to use:  $CPUS"
+echo "Input BAMs directory:    $BAMSDIR"
+echo "Input reference genome:  $REFERENCE"
+echo "Input regions file:      $REGIONS"
+echo "Output directory:        $OUTDIR"
+echo "Number of CPUs to use:   $CPUS"
 if [ -z "$EXTRA" ]; then
-    echo "Extra Platypus options: no"
+    echo "Extra Platypus options:  no"
 else
-    echo "Extra Platypus options: $EXTRA"
+    echo "Extra Platypus options:  $EXTRA"
 fi
+echo "Windows around variants: $WINDOWS"
 
 
 
@@ -725,12 +764,12 @@ if [ "$STEP" -lt 5 ]; then
     # Check successful execution
     # (the pipeline cannot assume that there will always be indel-flagged SNVs)
     if [ ! -s $OUTDIR/5-7_merged/indel_flagged_SNVs.txt ]; then
-        echo -e "\nWARNING: File $OUTDIR/5-7_merged/indel_flagged_SNVs.txt is empty, possibly due to an error."
-        echo "Please check the log in $OUTDIR/logs/5_indel_flag.log"
+        echo -e "\nWARNING: File $OUTDIR/5-7_merged/indel_flagged_SNVs.txt is empty."
+        echo "This may be due to an absence of indels, or SNVs near indels, in the data, or due to an error."
+        echo "Please check the log in $OUTDIR/logs/5_indel_flag.log for details."
     else
         echo -e "\nSuccess"
     fi
-    check_file 
 
     # Update checkpoint file
     echo "5 indel_flag" >> $OUTDIR/logs/CHECKPOINT
@@ -764,10 +803,16 @@ if [ "$STEP" -lt 7 ]; then
     extract_indels
     
     # Check successful execution
-    check_file $OUTDIR/5-7_merged/MergedIndels.vcf
+    # (the pipeline cannot assume that there will always be indel-flagged SNVs)
+    if [ ! -s $OUTDIR/5-7_merged/MergedIndels.vcf ]; then
+        echo -e "\nWARNING: File $OUTDIR/5-7_merged/MergedIndels.vcf is empty."
+        echo "This may be due to an absence of indels in the data, or to an error."
+        echo "Please check the log in $OUTDIR/logs/7_indel_merge.log for details."
+    else
+        echo -e "\nSuccess"
+    fi
 
     # Update checkpoint file
-    echo -e "\nSuccess"
     echo "7 extract_indels" >> $OUTDIR/logs/CHECKPOINT
 
 fi
@@ -784,11 +829,15 @@ if [ "$STEP" -lt 8 ]; then
         check_file "${FILE%.*}".sorted.vcf.gz
         check_file "${FILE%.*}".sorted.vcf.gz.tbi
     done
-    check_file $OUTDIR/5-7_merged/MergedIndels.sorted.vcf.gz
-    check_file $OUTDIR/5-7_merged/MergedIndels.sorted.vcf.gz.tbi
-    if [ "$REGIONS" != "no" ]; then
+    if [ -s $OUTDIR/5-7_merged/MergedIndels.vcf ]; then
+        check_file $OUTDIR/5-7_merged/MergedIndels.sorted.vcf.gz
+        check_file $OUTDIR/5-7_merged/MergedIndels.sorted.vcf.gz.tbi
+    fi
+    if [ "$REGIONS" != "no" ] || [ "$WINDOWS" != "no" ]; then
         check_file $OUTDIR/8-18_genotyped/regions_allele1.txt
-        check_file $OUTDIR/8-18_genotyped/regions_indels.txt
+        if [ -s $OUTDIR/5-7_merged/MergedIndels.vcf ]; then
+            check_file $OUTDIR/8-18_genotyped/regions_indels.txt
+        fi
     fi
     check_file $OUTDIR/8-18_genotyped/bam_list.txt
     
@@ -822,10 +871,14 @@ done
 if [ "$STEP" -lt 12 ]; then
         
     echo -e "\n(12) GENOTYPING INDELS\n"
-    genotyping 0
+    if [ -s $OUTDIR/5-7_merged/MergedIndels.vcf ]; then
     
-    # Check successful execution
-    check_file $OUTDIR/8-18_genotyped/GenotypedIndels_first.vcf
+        genotyping 0
+    
+        # Check successful execution
+        check_file $OUTDIR/8-18_genotyped/GenotypedIndels_first.vcf
+        
+    fi
     
     # Update checkpoint file
     echo -e "\nSuccess"
@@ -848,7 +901,7 @@ if [ "$STEP" -lt 13 ]; then
             check_file "${FILE%.*}".sorted.vcf.gz
             check_file "${FILE%.*}".sorted.vcf.gz.tbi
         done
-        if [ "$REGIONS" != "no" ]; then
+        if [ "$REGIONS" != "no" ] || [ "$WINDOWS" != "no" ]; then
             check_file $OUTDIR/8-18_genotyped/regions_allele1_indelExcluded.txt
         fi
         check_file $OUTDIR/8-18_genotyped/bam_list.txt
@@ -912,7 +965,9 @@ if [ "$STEP" -lt 18 ]; then
     
     # Check successful execution
     check_file $OUTDIR/Somatypus_SNVs_final.vcf
-    check_file $OUTDIR/Somatypus_Indels_final.vcf
+    if [ -s $OUTDIR/5-7_merged/MergedIndels.vcf ]; then
+        check_file $OUTDIR/Somatypus_Indels_final.vcf
+    fi
     
     # Update checkpoint file
     echo -e "\nSuccess"
@@ -923,6 +978,6 @@ fi
 
 echo -e "\nExecution finished on `date`"
 
-echo -e "\nALL DONE!"
+echo -e "\nALL DONE"
 echo -e "Output is in: $OUTDIR/Somatypus_SNVs_final.vcf\n              $OUTDIR/Somatypus_Indels_final.vcf\n"
 
