@@ -197,6 +197,7 @@ When the pipeline is run via the `somatypus` command with no options (or with `-
     |    -p  Additional options for Platypus, within quotes and separated by spaces.
     |
     | Options:
+    |    -w  Use windows around the variants as regions during genotyping.
     |    -h  Print this usage information and exit.
     |    -v  Print version and exit.
     |
@@ -206,6 +207,8 @@ When the pipeline is run via the `somatypus` command with no options (or with `-
 It is advisable that all the input paths be absolute, rather than relative. 
 
 An optional regions file (`-r` option) allows the user to define a set of genomic regions (e.g. exons) wherein to perform the calling. The regions file must be a text file containing one region per line, in CHR:START-END format (e.g. 1:1028676-1028844. The chromosome names must match those in the FASTA and BAM files).
+
+The `-w` option enables the use of windows of +/-200 bp around each variant as regions for genotyping. This may increase the efficiency of the genotyping process, especially in cases where no regions file is used. However, since it may cause some variants to be missed, this option should not be used unless necessary.
 
 The number of CPUs is also optional (default is 1) but, if specified, must be at least 1, and should not exceed 8 (or even less, depending on the amount of data), due to an inveterate Platypus bug that can cause an extremely excessive memory allocation attempt (see the [full documentation](docs/Somatypus%20Documentation.pdf)).
 
@@ -223,7 +226,7 @@ The full log of the pipeline execution will be stored in a file named SOMATYPUS_
 
 ## Licence
 
-Copyright © 2016 Transmissible Cancer Group, University of Cambridge  
+Copyright © 2016–2017 Transmissible Cancer Group, University of Cambridge  
 Author: Adrian Baez-Ortega ([ORCID 0000-0002-9201-4420] (http://orcid.org/0000-0002-9201-4420); ab2324@cam.ac.uk)
 
 Somatypus is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.

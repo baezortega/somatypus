@@ -1,11 +1,19 @@
 # Change Log
 
-## [1.3] - 2017-01-27
+## [1.3] - 2017-02-03
+
+### Added
+- Command-line option -w, which enables the use of windows of +/-200 bp around each
+  variant as regions for genotyping. This may increase the efficiency of the 
+  genotyping process, especially in cases where no regions file is used. However,
+  since it may cause some variants to be missed, this option should not be used
+  unless necessary.
 
 ### Changed
 - Quality filtering for called/genotyped indels has been modified, so that 
   filtering based on Platypus quality flags is done in the same manner as for SNVs.
-- Progress checks updated to allow cases where no indel-excluded SNVs are present.
+- Workflow updated to allow cases where no indels are present in the data.
+- Workflow updated to allow cases where no indel-excluded SNVs are present in the data.
 - Improved code for merging of indel regions before genotyping (by Kevin Gori).
 - Fixed bug in median VAF calculation during the filtering of indel-flagged SNVs.
 - Minor change in the naming of intermediate genotyped VCF files.
