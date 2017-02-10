@@ -1,5 +1,5 @@
 #### Download the latest release: Somatypus 1.3  ( [zip](../../archive/v1.3.zip) | [tar.gz](../../archive/v1.3.tar.gz) ).  
-[![DOI](https://zenodo.org/badge/50752400.svg)](https://zenodo.org/badge/latestdoi/50752400){:target="_blank"}
+[![DOI](https://zenodo.org/badge/50752400.svg)](https://zenodo.org/badge/latestdoi/50752400)
 
 ---
 
