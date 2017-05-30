@@ -235,7 +235,7 @@ Adrian Baez-Ortega. Somatypus: A Platypus-based variant calling pipeline for can
 ## Licence
 
 Copyright © 2016–2017 Transmissible Cancer Group, University of Cambridge  
-Author: Adrian Baez-Ortega ([ORCID 0000-0002-9201-4420] (http://orcid.org/0000-0002-9201-4420); ab2324@cam.ac.uk)
+Author: Adrian Baez-Ortega ([ORCID 0000-0002-9201-4420](http://orcid.org/0000-0002-9201-4420); ab2324@cam.ac.uk)
 
 Somatypus is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
 
