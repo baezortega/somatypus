@@ -12,15 +12,15 @@
 
 # Read data extracted with ExtractVcfData.py
 setwd("/PATH/TO/FILES/FOLDER")
-snvs.nr = read.table("Somatypus_SNVs_final_NR.txt", header=T, check.names=F)
-snvs.nv = read.table("Somatypus_SNVs_final_NV.txt", header=T, check.names=F)
-snvs.metadata = read.table("Somatypus_SNVs_final_Metadata.txt", header=T)
+snvs.nr <- read.table("Somatypus_SNVs_final_NR.txt", header=T, check.names=F)
+snvs.nv <- read.table("Somatypus_SNVs_final_NV.txt", header=T, check.names=F)
+snvs.metadata <- read.table("Somatypus_SNVs_final_Metadata.txt", header=T)
 
 
 
 # 1) Compute VAF (nv/nr)
-snvs.vaf = snvs.nv / snvs.nr
-snvs.vaf[is.na(snvs.vaf)] = 0
+snvs.vaf <- snvs.nv / snvs.nr
+snvs.vaf[is.na(snvs.vaf)] <- 0
 
 
 
@@ -33,40 +33,40 @@ snvs.vaf[is.na(snvs.vaf)] = 0
 # well as tumours without matched hosts, should be excluded from the sample set first.
 
 # Obtain sample names, and tumour and host sample indices
-samples = colnames(snvs.nv)
-tumours = grepl(".*T.*", samples)
-hosts = !tumours
+samples <- colnames(snvs.nv)
+tumours <- grepl(".*T.*", samples)
+hosts <- !tumours
 
 # If you want to exclude certain samples:
-# excluded = samples %in% c("Sample name 1", "Sample name 2", "Sample name 3")
-# tumours = grepl(".*T.*", samples) & !excluded
-# hosts = !tumours & !excluded
+# excluded <- samples %in% c("Sample name 1", "Sample name 2", "Sample name 3")
+# tumours <- grepl(".*T.*", samples) & !excluded
+# hosts <- !tumours & !excluded
 
 # First, take the variants that are not found in the set of variants with VAF>0.25 in hosts
 # (Variants with VAF<0.25 in a host are likely to be contamination coming from the tumour)
 # (If the variant is not present in a sample, the VAF will be 0, thus <0.25)
-MIN.VAF = 0.25
-not.hosts = apply(snvs.vaf[,hosts], 1, function(vaf) {
+MIN.VAF <- 0.25
+not.hosts <- apply(snvs.vaf[,hosts], 1, function(vaf) {
     all(vaf < MIN.VAF)
 })
 
 # Second, take the variants that are found with at least 3 supporting reads in at least one tumour
-MIN.READS = 3
-one.tumour = apply(snvs.nv[,tumours], 1, function(nv) {
+MIN.READS <- 3
+one.tumour <- apply(snvs.nv[,tumours], 1, function(nv) {
     any(nv >= MIN.READS)
 })
 
 # Extract tumour-only variants and host variants
-tumour.only.idx = not.hosts & one.tumour
-tumour.only.snvs = snvs.metadata[tumour.only.idx,]
-host.snvs = snvs.metadata[!tumour.only.idx,]
+tumour.only.idx <- not.hosts & one.tumour
+tumour.only.snvs <- snvs.metadata[tumour.only.idx,]
+host.snvs <- snvs.metadata[!tumour.only.idx,]
 
 
 
 # 3) Take histogram showing number of samples the T-only variants are shared between
 
 # Get number of samples in which each variant is present (≥3 reads)
-num.tumours = apply(snvs.nv[tumour.only.idx, tumours], 1, function(nv) {
+num.tumours <- apply(snvs.nv[tumour.only.idx, tumours], 1, function(nv) {
     sum(nv >= MIN.READS)
 })
 hist(num.tumours, breaks=100, col="cornflowerblue", border="white", main="Number of tumours containing each T-only variant (≥3 reads)", xlab=NULL)
