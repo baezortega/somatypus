@@ -196,7 +196,7 @@ extract_indels() {
     # (Indel merging uses unfiltered, unsplit calls)
     ls -1 $OUTDIR/1-2_individual_calls/*.vcf > $OUTDIR/1-2_individual_calls/list.txt
 
-    # Merge and filter indels; only bi-allelic, PASS-flagged indels are selected
+    # Merge and filter indels; only bi-allelic indels without flags badReads, MQ, strandBias, SC or QD are selected
     Somatypus_IndelMerge.py $OUTDIR/1-2_individual_calls/list.txt $OUTDIR/5-7_merged > $OUTDIR/logs/7_indel_merge.log
 
 }
