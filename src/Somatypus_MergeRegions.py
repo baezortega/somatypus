@@ -75,11 +75,10 @@ with open(outFile, 'w') as out:
         for test_region in regions[chrom][1:]:
             # If test_region starts before the active merged_region ends, then we know they overlap
             if test_region[0] <= merged_region[1]:
-                # test_region[1] always >= merged_region[1] because of sort
-                assert test_region[1] >= merged_region[1]
+                # Removed an assertion here that wasn't true - KG Jan 2020
 
-                # update the end of the merged region, and the positions
-                merged_region[1] = test_region[1]
+                # update the end of the merged region if test region end is beyond it, and the positions
+                merged_region[1] = max(merged_region[1], test_region[1])
                 positions.extend(test_region)
             else:
                 # new region doesn't overlap, so let's pack up and move on
