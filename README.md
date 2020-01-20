@@ -228,7 +228,7 @@ The full log of the pipeline execution will be stored in a file named SOMATYPUS_
 
 Please cite Somatypus as:
 
-Adrian Baez-Ortega. Somatypus: A Platypus-based variant calling pipeline for cancer data. Zenodo (2017). [doi:10.5281/zenodo.268310](https://zenodo.org/badge/latestdoi/50752400).
+#### A. Baez-Ortega _et al_. Somatic evolution and global expansion of an ancient transmissible cancer lineage. _Science_ 365, eaau9923 (2019). DOI: [10.1126/science.aau9923](https://doi.org/10.1126/science.aau9923).
 
 ---
 
